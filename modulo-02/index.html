@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo 2 · Mapas Interactivos — ARTECLAB</title>
+  <link rel="stylesheet" href="../css/course.css">
+  <link rel="icon" href="../img/logo-arteclab.png" type="image/png">
+</head>
+<body>
+<div class="site-wrapper">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index.html" class="topbar-brand">
+        <img src="../img/logo-arteclab.png" alt="ARTECLAB">
+        <span>/</span>
+        <span class="brand-course">Flutter GIS</span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index.html">Inicio</a>
+        <a href="../modulo-01/index.html">Módulo 1</a>
+        <a href="index.html" class="active">Módulo 2</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <div class="mod-header">
+      <span class="mod-chip">Módulo 2 de 6</span>
+      <h1 class="mod-title">Mapas Interactivos<br>& Capas Base 🗺️</h1>
+      <p class="mod-desc">Selector de capas base, marcadores con popups, polilíneas, polígonos y eventos de interacción sobre el mapa.</p>
+      <div class="mod-stats">
+        <span class="mod-stat">📅 Clases 3 y 4</span>
+        <span class="mod-stat">⏱️ 4 horas</span>
+        <span class="mod-stat">🎯 Básico-Intermedio</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-target="t-clase03">Clase 03 — Capas y Popups</button>
+      <button class="tab-btn" data-target="t-clase04">Clase 04 — Geometrías y Eventos</button>
+      <button class="tab-btn" data-target="t-quiz2">📝 Cuestionario</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CLASE 03
+         ═══════════════════════════════════════════════════════ -->
+    <div id="t-clase03" class="tab-panel active">
+
+      <div class="sec">
+        <h2 class="sec-heading">🎯 Objetivo</h2>
+        <p class="sec-lead">Implementar un selector de capas base (calles, satélite, terreno), controlar la cámara con animaciones, y crear marcadores que muestren información al tocarlos.</p>
+      </div>
+
+      <!-- Capas base -->
+      <div class="sec">
+        <h2 class="sec-heading">🗺️ Múltiples Capas Base</h2>
+        <p class="sec-lead">En QGIS cambias entre mapas base con un clic. En Flutter, cambias la URL de los tiles.</p>
+
+        <div class="card">
+          <div class="card-title">Proveedores de Tiles Gratuitos</div>
+          <p>Cada proveedor genera los tiles (imágenes cuadradas del mapa) con un estilo diferente. Definimos las URLs como constantes para reutilizarlas:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">class</span> <span class="hl-tp">TileProviders</span> {
+  <span class="hl-kw">static const</span> <span class="hl-tp">String</span> osm =
+    <span class="hl-st">'https://tile.openstreetmap.org/{z}/{x}/{y}.png'</span>;
+
+  <span class="hl-kw">static const</span> <span class="hl-tp">String</span> satelite =
+    <span class="hl-st">'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'</span>;
+
+  <span class="hl-kw">static const</span> <span class="hl-tp">String</span> terreno =
+    <span class="hl-st">'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'</span>;
+
+  <span class="hl-kw">static const</span> <span class="hl-tp">String</span> oscuro =
+    <span class="hl-st">'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'</span>;
+}</pre>
+          </div>
+          <div class="gis-analogy">Es como tener varios mapas base en QGIS (OSM, Google, Bing) y cambiar entre ellos desde el panel de capas.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Selector con DropdownButton</div>
+          <p>Necesitamos una variable de estado para controlar qué capa está activa, y un widget para que el usuario elija:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Variables de estado</span>
+<span class="hl-tp">String</span> _urlCapaActiva = TileProviders.osm;
+<span class="hl-tp">String</span> _nombreCapa = <span class="hl-st">'Calles'</span>;
+
+<span class="hl-kw">final</span> <span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">String</span>&gt; _capas = {
+  <span class="hl-st">'Calles'</span>:    TileProviders.osm,
+  <span class="hl-st">'Satélite'</span>: TileProviders.satelite,
+  <span class="hl-st">'Terreno'</span>:  TileProviders.terreno,
+  <span class="hl-st">'Oscuro'</span>:   TileProviders.oscuro,
+};
+
+<span class="hl-kw">void</span> <span class="hl-fn">_cambiarCapa</span>(<span class="hl-tp">String</span> nombre, <span class="hl-tp">String</span> url) {
+  <span class="hl-fn">setState</span>(() {
+    _nombreCapa = nombre;
+    _urlCapaActiva = url;
+  });
+}</pre>
+          </div>
+          <div class="callout callout--warn">
+            <span class="callout-icon">⚠️</span>
+            <div>Si olvidas el <code>setState()</code>, la variable cambia pero Flutter no redibuja el mapa. Siempre que modifiques el estado visual, envuélvelo en <code>setState()</code>.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">TileLayer dinámico</div>
+          <p>Ahora el TileLayer usa la variable en vez de una URL fija:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">TileLayer</span>(
+  urlTemplate: _urlCapaActiva,  <span class="hl-cm">// ← Dinámico</span>
+  userAgentPackageName: <span class="hl-st">'com.example.geo_collect'</span>,
+)</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cámara -->
+      <div class="sec">
+        <h2 class="sec-heading">🎥 Control de Cámara</h2>
+
+        <div class="card">
+          <div class="card-title">Mover el mapa programáticamente</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Movimiento instantáneo</span>
+_mapController.<span class="hl-fn">move</span>(nuevoLatLng, <span class="hl-nm">16.0</span>);
+
+<span class="hl-cm">// Leer posición actual</span>
+<span class="hl-tp">LatLng</span> centro = _mapController.camera.center;
+<span class="hl-tp">double</span> zoom = _mapController.camera.zoom;</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Animaciones suaves</div>
+          <p>Para que el mapa se mueva suavemente (como Google Maps), necesitamos animaciones. Primero, agrega <code>TickerProviderStateMixin</code> al State:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">class</span> <span class="hl-tp">_MapaScreenState</span> <span class="hl-kw">extends</span> <span class="hl-tp">State</span>&lt;<span class="hl-tp">MapaScreen</span>&gt;
+    <span class="hl-kw">with</span> <span class="hl-tp">TickerProviderStateMixin</span> {
+
+  <span class="hl-kw">void</span> <span class="hl-fn">_animarHacia</span>(<span class="hl-tp">LatLng</span> destino, <span class="hl-tp">double</span> zoomFinal) {
+    <span class="hl-kw">final</span> latTween = <span class="hl-tp">Tween</span>&lt;<span class="hl-tp">double</span>&gt;(
+      begin: _mapController.camera.center.latitude,
+      end: destino.latitude,
+    );
+    <span class="hl-kw">final</span> lngTween = <span class="hl-tp">Tween</span>&lt;<span class="hl-tp">double</span>&gt;(
+      begin: _mapController.camera.center.longitude,
+      end: destino.longitude,
+    );
+    <span class="hl-kw">final</span> zoomTween = <span class="hl-tp">Tween</span>&lt;<span class="hl-tp">double</span>&gt;(
+      begin: _mapController.camera.zoom,
+      end: zoomFinal,
+    );
+
+    <span class="hl-kw">final</span> ctrl = <span class="hl-tp">AnimationController</span>(
+      duration: <span class="hl-kw">const</span> <span class="hl-tp">Duration</span>(milliseconds: <span class="hl-nm">800</span>),
+      vsync: <span class="hl-kw">this</span>,
+    );
+
+    <span class="hl-kw">final</span> curve = <span class="hl-tp">CurvedAnimation</span>(
+      parent: ctrl, curve: <span class="hl-tp">Curves</span>.easeInOut,
+    );
+
+    ctrl.<span class="hl-fn">addListener</span>(() {
+      _mapController.<span class="hl-fn">move</span>(
+        <span class="hl-tp">LatLng</span>(latTween.<span class="hl-fn">evaluate</span>(curve),
+              lngTween.<span class="hl-fn">evaluate</span>(curve)),
+        zoomTween.<span class="hl-fn">evaluate</span>(curve),
+      );
+    });
+
+    ctrl.<span class="hl-fn">addStatusListener</span>((s) {
+      <span class="hl-kw">if</span> (s == <span class="hl-tp">AnimationStatus</span>.completed) ctrl.<span class="hl-fn">dispose</span>();
+    });
+
+    ctrl.<span class="hl-fn">forward</span>();
+  }
+}</pre>
+          </div>
+          <div class="callout callout--tip">
+            <span class="callout-icon">💡</span>
+            <div>No necesitas memorizar este código. Es un patrón que copias y reutilizas. Lo importante es saber que existe y cuándo usarlo.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popups -->
+      <div class="sec">
+        <h2 class="sec-heading">💬 Marcadores con Popups</h2>
+
+        <div class="card">
+          <div class="card-title">Instalar flutter_map_marker_popup</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">yaml — pubspec.yaml</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>dependencies:
+  flutter_map_marker_popup: ^7.0.0</pre>
+          </div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Terminal</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>flutter pub get</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Reemplazar MarkerLayer con PopupMarkerLayer</div>
+          <p>En vez de <code>MarkerLayer</code>, usamos <code>PopupMarkerLayer</code> que agrega el popup automáticamente al tocar:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">import</span> <span class="hl-st">'package:flutter_map_marker_popup/flutter_map_marker_popup.dart'</span>;
+
+<span class="hl-kw">final</span> <span class="hl-tp">PopupController</span> _popupCtrl = <span class="hl-tp">PopupController</span>();
+
+<span class="hl-cm">// Dentro de FlutterMap children:</span>
+<span class="hl-tp">PopupMarkerLayer</span>(
+  options: <span class="hl-tp">PopupMarkerLayerOptions</span>(
+    popupController: _popupCtrl,
+    markers: misMarcadores,
+    popupDisplayOptions: <span class="hl-tp">PopupDisplayOptions</span>(
+      builder: (<span class="hl-tp">BuildContext</span> ctx, <span class="hl-tp">Marker</span> marker) {
+        <span class="hl-kw">return</span> <span class="hl-fn">_miPopup</span>(marker);
+      },
+    ),
+  ),
+),</pre>
+          </div>
+          <div class="gis-analogy">Es como hacer clic en un feature de QGIS y ver sus atributos en un panel. Aquí tocas el marcador y aparece la info.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Diseñar el Widget del Popup</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">Widget</span> <span class="hl-fn">_miPopup</span>(<span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">dynamic</span>&gt; punto) {
+  <span class="hl-kw">return</span> <span class="hl-tp">Container</span>(
+    width: <span class="hl-nm">200</span>,
+    padding: <span class="hl-kw">const</span> <span class="hl-tp">EdgeInsets</span>.<span class="hl-fn">all</span>(<span class="hl-nm">12</span>),
+    decoration: <span class="hl-tp">BoxDecoration</span>(
+      color: <span class="hl-tp">Colors</span>.white,
+      borderRadius: <span class="hl-tp">BorderRadius</span>.<span class="hl-fn">circular</span>(<span class="hl-nm">10</span>),
+      boxShadow: [<span class="hl-tp">BoxShadow</span>(
+        color: <span class="hl-tp">Colors</span>.black26, blurRadius: <span class="hl-nm">8</span>,
+      )],
+    ),
+    child: <span class="hl-tp">Column</span>(
+      mainAxisSize: <span class="hl-tp">MainAxisSize</span>.min,
+      crossAxisAlignment: <span class="hl-tp">CrossAxisAlignment</span>.start,
+      children: [
+        <span class="hl-tp">Text</span>(punto[<span class="hl-st">'nombre'</span>],
+          style: <span class="hl-kw">const</span> <span class="hl-tp">TextStyle</span>(fontWeight: <span class="hl-tp">FontWeight</span>.bold)),
+        <span class="hl-tp">Text</span>(<span class="hl-st">'Tipo: ${punto['tipo']}'</span>,
+          style: <span class="hl-tp">TextStyle</span>(fontSize: <span class="hl-nm">12</span>, color: <span class="hl-tp">Colors</span>.grey)),
+      ],
+    ),
+  );
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Glosario -->
+      <div class="sec">
+        <h2 class="sec-heading">📖 Glosario — Clase 03</h2>
+        <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">Tile Provider</span><span class="glossary-def">Servidor que genera y entrega las imágenes (tiles) del mapa según zoom y posición.</span></div>
+          <div class="glossary-item"><span class="glossary-term">DropdownButton</span><span class="glossary-def">Widget de Flutter que muestra un menú desplegable con opciones.</span></div>
+          <div class="glossary-item"><span class="glossary-term">MapController</span><span class="glossary-def">Objeto que permite mover, hacer zoom y controlar el mapa por código.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Animation</span><span class="glossary-def">Transición suave entre dos valores. Hace que los movimientos se vean fluidos.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Tween</span><span class="glossary-def">Define el rango de una animación: valor inicial → valor final.</span></div>
+          <div class="glossary-item"><span class="glossary-term">PopupController</span><span class="glossary-def">Controla cuándo se muestra y oculta el popup de un marcador.</span></div>
+          <div class="glossary-item"><span class="glossary-term">BoxDecoration</span><span class="glossary-def">Estilo visual de un Container: color, bordes, sombras, esquinas redondeadas.</span></div>
+        </div>
+      </div>
+
+      <!-- Práctica -->
+      <div class="practice">
+        <span class="practice-chip">💻 Práctica 03</span>
+        <div class="practice-title">Capas Base y Marcadores con Info</div>
+        <ol class="practice-steps">
+          <li>Agrega al menos <strong>3 proveedores de tiles</strong> (Calles, Satélite, Oscuro) y un <code>DropdownButton</code> para cambiar entre ellos.</li>
+          <li>Convierte tus marcadores del Módulo 1 a <strong>PopupMarkerLayer</strong> con popups que muestren nombre, tipo y coordenadas.</li>
+          <li>Agrega un ícono correspondiente al tipo en cada popup (parque → 🌳, iglesia → ⛪, etc.).</li>
+          <li>Implementa <strong>animación suave</strong> al navegar entre puntos con el FloatingActionButton.</li>
+        </ol>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">✅ Checklist — Clase 03</h2>
+        <ul class="checklist">
+          <li><span class="ck-box"></span> Selector de capas base funcional (mínimo 3)</li>
+          <li><span class="ck-box"></span> Cambio de capa se refleja en el mapa</li>
+          <li><span class="ck-box"></span> Marcadores muestran popup al tocar</li>
+          <li><span class="ck-box"></span> Popup muestra nombre, tipo y coordenadas</li>
+          <li><span class="ck-box"></span> Popups se cierran al tocar fuera</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CLASE 04
+         ═══════════════════════════════════════════════════════ -->
+    <div id="t-clase04" class="tab-panel">
+
+      <div class="sec">
+        <h2 class="sec-heading">🎯 Objetivo</h2>
+        <p class="sec-lead">Dibujar polilíneas y polígonos sobre el mapa, capturar eventos de toque del usuario, y mostrar coordenadas en tiempo real.</p>
+      </div>
+
+      <!-- Polilíneas -->
+      <div class="sec">
+        <h2 class="sec-heading">📏 Polilíneas — Rutas y Caminos</h2>
+        <p class="sec-lead">Una polilínea conecta puntos con líneas. En GIS: rutas, ríos, carreteras.</p>
+
+        <div class="card">
+          <div class="card-title">Dibujar una ruta</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Puntos de una ruta real (busca los tuyos en Google Maps)</span>
+<span class="hl-kw">final</span> <span class="hl-tp">List</span>&lt;<span class="hl-tp">LatLng</span>&gt; _miRuta = [
+  <span class="hl-kw">const</span> <span class="hl-tp">LatLng</span>(-<span class="hl-nm">17.3935</span>, -<span class="hl-nm">66.1570</span>),  <span class="hl-cm">// Punto A</span>
+  <span class="hl-kw">const</span> <span class="hl-tp">LatLng</span>(-<span class="hl-nm">17.3940</span>, -<span class="hl-nm">66.1530</span>),  <span class="hl-cm">// Punto B</span>
+  <span class="hl-kw">const</span> <span class="hl-tp">LatLng</span>(-<span class="hl-nm">17.3960</span>, -<span class="hl-nm">66.1510</span>),  <span class="hl-cm">// Punto C</span>
+];
+
+<span class="hl-cm">// Dentro de FlutterMap children:</span>
+<span class="hl-tp">PolylineLayer</span>(
+  polylines: [
+    <span class="hl-tp">Polyline</span>(
+      points: _miRuta,
+      color: <span class="hl-tp">Colors</span>.blue,
+      strokeWidth: <span class="hl-nm">4.0</span>,
+    ),
+  ],
+),</pre>
+          </div>
+          <div class="gis-analogy">Digitalizar una línea en QGIS: clic, clic, clic → se conectan los puntos. Aquí defines las coordenadas y Flutter dibuja la línea.</div>
+        </div>
+      </div>
+
+      <!-- Polígonos -->
+      <div class="sec">
+        <h2 class="sec-heading">⬡ Polígonos — Áreas y Zonas</h2>
+
+        <div class="card">
+          <div class="card-title">Dibujar una zona de estudio</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">final</span> <span class="hl-tp">List</span>&lt;<span class="hl-tp">LatLng</span>&gt; _zona = [
+  <span class="hl-kw">const</span> <span class="hl-tp">LatLng</span>(-<span class="hl-nm">17.390</span>, -<span class="hl-nm">66.160</span>),
+  <span class="hl-kw">const</span> <span class="hl-tp">LatLng</span>(-<span class="hl-nm">17.390</span>, -<span class="hl-nm">66.148</span>),
+  <span class="hl-kw">const</span> <span class="hl-tp">LatLng</span>(-<span class="hl-nm">17.400</span>, -<span class="hl-nm">66.148</span>),
+  <span class="hl-kw">const</span> <span class="hl-tp">LatLng</span>(-<span class="hl-nm">17.400</span>, -<span class="hl-nm">66.160</span>),
+];
+
+<span class="hl-tp">PolygonLayer</span>(
+  polygons: [
+    <span class="hl-tp">Polygon</span>(
+      points: _zona,
+      color: <span class="hl-tp">Colors</span>.teal.<span class="hl-fn">withOpacity</span>(<span class="hl-nm">0.2</span>),
+      borderColor: <span class="hl-tp">Colors</span>.teal,
+      borderStrokeWidth: <span class="hl-nm">2.0</span>,
+      isFilled: <span class="hl-kw">true</span>,
+    ),
+  ],
+),</pre>
+          </div>
+          <div class="callout callout--tip">
+            <span class="callout-icon">💡</span>
+            <div>Usa <code>withOpacity(0.2)</code> para que el relleno sea semi-transparente y puedas ver el mapa base debajo — igual que la transparencia de capas en QGIS.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eventos -->
+      <div class="sec">
+        <h2 class="sec-heading">👆 Eventos de Interacción</h2>
+
+        <div class="card">
+          <div class="card-title">onTap, onLongPress, onPositionChanged</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">MapOptions</span>(
+  initialCenter: _centro,
+  initialZoom: <span class="hl-nm">14</span>,
+
+  <span class="hl-cm">// Toque simple → mostrar coordenadas</span>
+  onTap: (tapPos, latLng) {
+    <span class="hl-fn">print</span>(<span class="hl-st">'Tap en: $latLng'</span>);
+  },
+
+  <span class="hl-cm">// Toque largo → agregar marcador</span>
+  onLongPress: (tapPos, latLng) {
+    <span class="hl-fn">_agregarPunto</span>(latLng);
+  },
+
+  <span class="hl-cm">// Al mover el mapa → actualizar barra</span>
+  onPositionChanged: (camera, hasGesture) {
+    <span class="hl-fn">setState</span>(() {
+      _zoomActual = camera.zoom;
+      _centroActual = camera.center;
+    });
+  },
+),</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Agregar marcadores donde toca el usuario</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">List</span>&lt;<span class="hl-tp">LatLng</span>&gt; _misMarkers = [];
+
+<span class="hl-kw">void</span> <span class="hl-fn">_agregarPunto</span>(<span class="hl-tp">LatLng</span> pos) {
+  <span class="hl-fn">setState</span>(() {
+    _misMarkers.<span class="hl-fn">add</span>(pos);
+  });
+}
+
+<span class="hl-cm">// En FlutterMap children:</span>
+<span class="hl-tp">MarkerLayer</span>(
+  markers: _misMarkers.<span class="hl-fn">map</span>((p) {
+    <span class="hl-kw">return</span> <span class="hl-tp">Marker</span>(
+      point: p, width: <span class="hl-nm">30</span>, height: <span class="hl-nm">30</span>,
+      child: <span class="hl-kw">const</span> <span class="hl-tp">Icon</span>(<span class="hl-tp">Icons</span>.push_pin,
+        color: <span class="hl-tp">Colors</span>.purple, size: <span class="hl-nm">28</span>),
+    );
+  }).<span class="hl-fn">toList</span>(),
+),</pre>
+          </div>
+          <div class="gis-analogy">Esto es captura de puntos en campo: el usuario toca dónde quiere registrar un punto y se agrega al mapa. En el Módulo 5 le agregaremos formulario de atributos.</div>
+        </div>
+      </div>
+
+      <!-- Glosario -->
+      <div class="sec">
+        <h2 class="sec-heading">📖 Glosario — Clase 04</h2>
+        <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">Polyline</span><span class="glossary-def">Secuencia de puntos conectados por segmentos de línea. Representa rutas, ríos, carreteras.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Polygon</span><span class="glossary-def">Área cerrada definida por vértices. Representa municipios, parcelas, zonas de estudio.</span></div>
+          <div class="glossary-item"><span class="glossary-term">onTap</span><span class="glossary-def">Evento que se dispara al tocar brevemente el mapa. Recibe la posición en LatLng.</span></div>
+          <div class="glossary-item"><span class="glossary-term">onLongPress</span><span class="glossary-def">Evento al mantener presionado el mapa. Ideal para agregar puntos.</span></div>
+          <div class="glossary-item"><span class="glossary-term">onPositionChanged</span><span class="glossary-def">Se ejecuta cada vez que el mapa se mueve o hace zoom. Útil para actualizar info en tiempo real.</span></div>
+          <div class="glossary-item"><span class="glossary-term">withOpacity()</span><span class="glossary-def">Método que aplica transparencia a un color. 0.0 = invisible, 1.0 = sólido.</span></div>
+          <div class="glossary-item"><span class="glossary-term">SnackBar</span><span class="glossary-def">Barra de mensaje temporal que aparece abajo de la pantalla.</span></div>
+        </div>
+      </div>
+
+      <!-- Práctica -->
+      <div class="practice">
+        <span class="practice-chip">💻 Práctica 04</span>
+        <div class="practice-title">Geometrías y Eventos</div>
+        <ol class="practice-steps">
+          <li>Dibuja una <strong>polilínea</strong> con al menos 4 puntos reales de tu ciudad (una ruta que conozcas).</li>
+          <li>Dibuja un <strong>polígono</strong> semi-transparente representando un parque o barrio.</li>
+          <li>Implementa <strong>onLongPress</strong> para agregar marcadores púrpuras donde el usuario mantiene presionado.</li>
+          <li>Agrega <strong>onPositionChanged</strong> para mostrar coordenadas del centro y zoom en la barra inferior.</li>
+          <li>Agrega un botón <strong>"Limpiar"</strong> en el AppBar que elimine los marcadores del usuario.</li>
+        </ol>
+      </div>
+
+      <div class="challenge">
+        <span class="challenge-chip">🚀 Reto Extra — Dibujo Libre</span>
+        <div class="card-title" style="color:var(--text-primary); margin-bottom:8px;">Modo dibujo sobre el mapa</div>
+        <p style="font-size:0.9rem;">Implementa un botón que active/desactive un "modo dibujo". Cuando está activo, cada tap agrega un punto a una polilínea que se va dibujando en tiempo real. Otro botón cierra la polilínea convirtiéndola en polígono.</p>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">✅ Checklist — Clase 04</h2>
+        <ul class="checklist">
+          <li><span class="ck-box"></span> Polilínea con puntos reales de mi ciudad</li>
+          <li><span class="ck-box"></span> Polígono semi-transparente visible</li>
+          <li><span class="ck-box"></span> onLongPress agrega marcadores</li>
+          <li><span class="ck-box"></span> Barra inferior con coordenadas en tiempo real</li>
+          <li><span class="ck-box"></span> Botón limpiar funcional</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CUESTIONARIO
+         ═══════════════════════════════════════════════════════ -->
+    <div id="t-quiz2" class="tab-panel">
+
+      <div class="sec">
+        <h2 class="sec-heading">📝 Autoevaluación — Módulo 2</h2>
+        <p class="sec-lead">Verifica tu comprensión de capas, popups, geometrías y eventos.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="quiz-heading">🧠 Cuestionario — 8 preguntas</div>
+
+        <div class="quiz-q" data-qi="1" data-ans="c" data-explain="Cambiar la URL del TileLayer cambia la fuente de tiles del mapa.">
+          <p class="quiz-q-text"><span class="quiz-q-num">1.</span> ¿Cómo cambias la capa base del mapa en flutter_map?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Instalando un plugin diferente</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Creando un nuevo FlutterMap</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Cambiando la URL del TileLayer</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Reiniciando la app</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="2" data-ans="b" data-explain="setState() notifica a Flutter que debe redibujar la interfaz.">
+          <p class="quiz-q-text"><span class="quiz-q-num">2.</span> ¿Por qué necesitas setState() al cambiar la capa activa?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Para descargar los nuevos tiles</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Para que Flutter redibuje el mapa con la nueva URL</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Para guardar la preferencia del usuario</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> No es necesario</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="3" data-ans="a" data-explain="MapController permite mover, hacer zoom y controlar el mapa desde código.">
+          <p class="quiz-q-text"><span class="quiz-q-num">3.</span> ¿Para qué sirve MapController?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Mover y controlar el mapa por código</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Dibujar polígonos</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Conectar con GeoServer</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Gestionar permisos de Android</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="4" data-ans="d" data-explain="Una Polyline conecta puntos con líneas — ideal para rutas y caminos.">
+          <p class="quiz-q-text"><span class="quiz-q-num">4.</span> ¿Qué tipo de geometría usarías para representar una ruta de senderismo?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Polygon</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Marker</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> TileLayer</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Polyline</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="5" data-ans="b" data-explain="withOpacity() hace el relleno semi-transparente para ver el mapa debajo.">
+          <p class="quiz-q-text"><span class="quiz-q-num">5.</span> ¿Cómo haces un polígono semi-transparente?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Usando isDotted: true</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Usando color con withOpacity()</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Usando borderColor</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> No es posible</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="6" data-ans="c" data-explain="onLongPress se activa al mantener presionado, ideal para agregar puntos.">
+          <p class="quiz-q-text"><span class="quiz-q-num">6.</span> ¿Qué evento usarías para que el usuario agregue un marcador al mantener presionado?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> onTap</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> onPositionChanged</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> onLongPress</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> onZoom</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="7" data-ans="a" data-explain="onPositionChanged se ejecuta cada vez que la cámara se mueve o cambia de zoom.">
+          <p class="quiz-q-text"><span class="quiz-q-num">7.</span> ¿Cómo actualizas la barra inferior con las coordenadas del centro en tiempo real?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Con onPositionChanged + setState()</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Con un Timer que consulta cada segundo</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Con onTap</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> No se puede en tiempo real</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="8" data-ans="d" data-explain="TickerProviderStateMixin permite usar AnimationController para animaciones suaves.">
+          <p class="quiz-q-text"><span class="quiz-q-num">8.</span> ¿Qué necesitas agregar al State para usar animaciones suaves del mapa?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> import 'animation.dart'</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> extends AnimatedWidget</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> final animated = true</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> with TickerProviderStateMixin</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <button class="quiz-submit">Verificar Respuestas</button>
+        <div class="quiz-result"></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <a href="../modulo-01/index.html" class="btn-nav btn-prev">← Módulo 1</a>
+      <a href="../modulo-03/index.html" class="btn-nav btn-next">Módulo 3 — GPS Real →</a>
+    </div>
+
+  </main>
+</div>
+<script src="../js/course.js"></script>
+</body>
+</html>
