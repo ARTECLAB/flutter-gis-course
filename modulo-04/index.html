@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo 4 · GeoServer WMS — ARTECLAB</title>
+  <link rel="stylesheet" href="../css/course.css">
+  <link rel="icon" href="../img/logo-arteclab.png" type="image/png">
+</head>
+<body>
+<div class="site-wrapper">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index.html" class="topbar-brand">
+        <img src="../img/logo-arteclab.png" alt="ARTECLAB">
+        <span>/</span>
+        <span class="brand-course">Flutter GIS</span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index.html">Inicio</a>
+        <a href="../modulo-03/index.html">Módulo 3</a>
+        <a href="index.html" class="active">Módulo 4</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <div class="mod-header">
+      <span class="mod-chip">Módulo 4 de 6</span>
+      <h1 class="mod-title">Consumo de Capas<br>GeoServer WMS 🌐</h1>
+      <p class="mod-desc">Tu app se conecta a un servidor GIS real. Capas WMS profesionales, filtros CQL y consulta de atributos directamente desde el mapa.</p>
+      <div class="mod-stats">
+        <span class="mod-stat">📅 Clases 7 y 8</span>
+        <span class="mod-stat">⏱️ 4 horas</span>
+        <span class="mod-stat">🎯 Intermedio</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-target="t-clase07">Clase 07 — GeoServer y WMS</button>
+      <button class="tab-btn" data-target="t-clase08">Clase 08 — Filtros CQL y Consultas</button>
+      <button class="tab-btn" data-target="t-quiz4">📝 Cuestionario</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CLASE 07
+         ═══════════════════════════════════════════════════════ -->
+    <div id="t-clase07" class="tab-panel active">
+
+      <div class="sec">
+        <h2 class="sec-heading">🎯 Objetivo</h2>
+        <p class="sec-lead">Entender qué es un servidor GIS, cómo funciona el estándar WMS, y conectar tu app con capas de un GeoServer real.</p>
+      </div>
+
+      <!-- ── Qué es GeoServer ── -->
+      <div class="sec">
+        <h2 class="sec-heading">🖥️ ¿Qué es GeoServer?</h2>
+
+        <div class="card">
+          <div class="card-title">Un servidor que sirve mapas por internet</div>
+          <p>GeoServer es un programa que se instala en un servidor (computadora conectada a internet). Su trabajo es tomar datos geográficos (shapefiles, bases de datos PostGIS, imágenes GeoTIFF) y servirlos a cualquier aplicación que los pida — tu app Flutter, un sitio web, QGIS, o cualquier otro cliente.</p>
+
+          <p style="margin-top:14px;">Piensa en un restaurante:</p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin:16px 0;">
+            <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:1.5rem;">🗄️</div>
+              <strong style="color:var(--text-primary); font-size:0.85rem;">Datos</strong><br>
+              <span style="font-size:0.8rem;">Shapefiles, PostGIS, GeoTIFF = ingredientes en la cocina</span>
+            </div>
+            <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:1.5rem;">🖥️</div>
+              <strong style="color:var(--text-primary); font-size:0.85rem;">GeoServer</strong><br>
+              <span style="font-size:0.8rem;">La cocina que prepara los platos (imágenes de mapa)</span>
+            </div>
+            <div style="background:var(--teal-glow); padding:14px; border-radius:var(--radius-sm); text-align:center;">
+              <div style="font-size:1.5rem;">📋</div>
+              <strong style="color:var(--teal-400); font-size:0.85rem;">WMS</strong><br>
+              <span style="font-size:0.8rem;">El menú: pides "dame esta capa en esta zona"</span>
+            </div>
+            <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:1.5rem;">📱</div>
+              <strong style="color:var(--text-primary); font-size:0.85rem;">Tu App</strong><br>
+              <span style="font-size:0.8rem;">El cliente que pide y recibe el plato servido</span>
+            </div>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">💡</span>
+            <div><strong>Tu app NO descarga los datos originales.</strong> Solo pide imágenes renderizadas del mapa. Es como pedir un plato sin entrar a la cocina. Los datos pesados se quedan en el servidor.</div>
+          </div>
+
+          <div class="gis-analogy">Ya hiciste esto antes: en QGIS cuando agregas una capa WMS (Capa → Agregar capa WMS/WMTS), QGIS se conecta al servidor y muestra las imágenes. Tu app Flutter hará exactamente lo mismo.</div>
+        </div>
+      </div>
+
+      <!-- ── WMS ── -->
+      <div class="sec">
+        <h2 class="sec-heading">📋 ¿Qué es WMS?</h2>
+
+        <div class="card">
+          <div class="card-title">Web Map Service — El estándar para pedir mapas</div>
+          <p>WMS es un estándar internacional (de la OGC — Open Geospatial Consortium) que define <strong>cómo pedirle imágenes de mapa a un servidor</strong>. Es como un idioma universal: cualquier servidor que hable WMS puede ser consumido por cualquier cliente que entienda WMS.</p>
+
+          <p style="margin-top:12px;">Cuando tu app pide una capa WMS, le dice al servidor:</p>
+          <div style="background:var(--bg-surface); padding:16px; border-radius:var(--radius-sm); margin:12px 0; border:1px solid var(--border-subtle);">
+            <p style="margin:0; font-size:0.88rem; line-height:1.8;">
+              "Dame la capa <strong>'departamentos'</strong>,<br>
+              en la zona de <strong>latitud -17 a -16, longitud -69 a -67</strong>,<br>
+              en formato <strong>PNG con fondo transparente</strong>,<br>
+              usando el sistema de coordenadas <strong>EPSG:4326</strong>."
+            </p>
+          </div>
+          <p>Y el servidor responde con una <strong>imagen PNG</strong> de esa zona con los datos dibujados.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Anatomía de una URL WMS</div>
+          <p>Una petición WMS es simplemente una URL con parámetros. Cada parámetro le dice algo al servidor:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">URL WMS</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>https://miservidor.com/geoserver/wms?
+  service=WMS            <span class="hl-cm">← Tipo de servicio</span>
+  &request=GetMap         <span class="hl-cm">← "Dame una imagen"</span>
+  &layers=geo:rios        <span class="hl-cm">← Qué capa quiero</span>
+  &bbox=-69,-17,-67,-16   <span class="hl-cm">← Zona geográfica</span>
+  &width=800&height=600   <span class="hl-cm">← Tamaño en píxeles</span>
+  &srs=EPSG:4326          <span class="hl-cm">← Sistema de coordenadas</span>
+  &format=image/png       <span class="hl-cm">← Formato de imagen</span>
+  &transparent=true       <span class="hl-cm">← Fondo transparente</span></pre>
+          </div>
+
+          <div class="callout callout--tip">
+            <span class="callout-icon">💡</span>
+            <div><strong>No necesitas construir esta URL a mano.</strong> flutter_map la construye automáticamente. Solo le das la URL base y los parámetros principales.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Conectar ── -->
+      <div class="sec">
+        <h2 class="sec-heading">🔌 Conectar con GeoServer desde Flutter</h2>
+
+        <div class="card">
+          <div class="card-title">WMSTileLayerOptions — El puente entre tu app y GeoServer</div>
+          <p>flutter_map tiene soporte nativo para WMS. Solo necesitas decirle la URL del servidor y el nombre de la capa:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Agregar a los children de FlutterMap</span>
+<span class="hl-tp">TileLayer</span>(
+  wmsOptions: <span class="hl-tp">WMSTileLayerOptions</span>(
+    baseUrl: <span class="hl-st">'https://miservidor.com/geoserver/wms?'</span>,
+    layers: [<span class="hl-st">'workspace:departamentos'</span>],
+    transparent: <span class="hl-kw">true</span>,
+    format: <span class="hl-st">'image/png'</span>,
+    version: <span class="hl-st">'1.1.1'</span>,
+    otherParameters: {
+      <span class="hl-st">'SRS'</span>: <span class="hl-st">'EPSG:4326'</span>,
+    },
+  ),
+),</pre>
+          </div>
+          <div class="callout callout--danger">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>El <code>?</code> al final de baseUrl es OBLIGATORIO.</strong> flutter_map agrega los parámetros después de ese <code>?</code>. Sin él, la URL queda mal formada y no carga nada.</div>
+          </div>
+
+          <div class="card" style="margin-top:16px;">
+            <div class="card-title">¿Qué es "workspace:nombre_capa"?</div>
+            <p>En GeoServer, los datos se organizan en <strong>workspaces</strong> (espacios de trabajo). El nombre de una capa siempre tiene el formato <code>workspace:nombre</code>. Es como una ruta de carpeta: <code>datos_bolivia:departamentos</code> significa "la capa departamentos dentro del workspace datos_bolivia".</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Múltiples capas ── -->
+      <div class="sec">
+        <h2 class="sec-heading">🗂️ Múltiples Capas WMS + Panel de Control</h2>
+
+        <div class="card">
+          <div class="card-title">Toggle de capas con Drawer</div>
+          <p>En QGIS tienes un panel de capas con checkboxes. En Flutter, usamos un Drawer (panel lateral) con switches:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Estado: qué capas están activas</span>
+<span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">bool</span>&gt; _capasWMS = {
+  <span class="hl-st">'departamentos'</span>: <span class="hl-kw">true</span>,
+  <span class="hl-st">'rios'</span>: <span class="hl-kw">false</span>,
+  <span class="hl-st">'carreteras'</span>: <span class="hl-kw">false</span>,
+};
+
+<span class="hl-cm">// En FlutterMap children — genera capas dinámicamente</span>
+..._capasWMS.entries.<span class="hl-fn">where</span>((e) =&gt; e.value).<span class="hl-fn">map</span>((e) {
+  <span class="hl-kw">return</span> <span class="hl-tp">TileLayer</span>(
+    wmsOptions: <span class="hl-tp">WMSTileLayerOptions</span>(
+      baseUrl: <span class="hl-st">'https://miservidor.com/geoserver/wms?'</span>,
+      layers: [<span class="hl-st">'workspace:${e.key}'</span>],
+      transparent: <span class="hl-kw">true</span>,
+      format: <span class="hl-st">'image/png'</span>,
+    ),
+  );
+}).<span class="hl-fn">toList</span>(),</pre>
+          </div>
+
+          <div class="card" style="margin-top:16px;">
+            <div class="card-title">¿Qué es un Drawer?</div>
+            <p>Un <strong>Drawer</strong> es un panel lateral que se desliza desde el borde izquierdo de la pantalla. En Android lo ves en muchas apps (Gmail, Google Maps). Es ideal para poner controles secundarios como la lista de capas, sin ocupar espacio permanente en pantalla.</p>
+          </div>
+
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Drawer con switches para cada capa</span>
+<span class="hl-tp">Drawer</span>(
+  child: <span class="hl-tp">ListView</span>(
+    padding: <span class="hl-kw">const</span> <span class="hl-tp">EdgeInsets</span>.<span class="hl-fn">all</span>(<span class="hl-nm">16</span>),
+    children: [
+      <span class="hl-kw">const</span> <span class="hl-tp">Text</span>(<span class="hl-st">'Capas WMS'</span>,
+        style: <span class="hl-tp">TextStyle</span>(fontSize: <span class="hl-nm">18</span>, fontWeight: <span class="hl-tp">FontWeight</span>.bold)),
+      ..._capasWMS.entries.<span class="hl-fn">map</span>((e) =&gt; <span class="hl-tp">SwitchListTile</span>(
+        title: <span class="hl-tp">Text</span>(e.key),
+        value: e.value,
+        onChanged: (v) =&gt; <span class="hl-fn">setState</span>(() =&gt; _capasWMS[e.key] = v),
+      )).<span class="hl-fn">toList</span>(),
+    ],
+  ),
+)</pre>
+          </div>
+          <div class="gis-analogy">Es exactamente el panel de capas de QGIS — checkboxes para activar/desactivar capas. Misma funcionalidad, diferente interfaz.</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📖 Glosario — Clase 07</h2>
+        <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">GeoServer</span><span class="glossary-def">Servidor de datos geográficos que los publica vía WMS, WFS, WCS por internet.</span></div>
+          <div class="glossary-item"><span class="glossary-term">WMS</span><span class="glossary-def">Web Map Service. Estándar OGC para pedir imágenes de mapa a un servidor.</span></div>
+          <div class="glossary-item"><span class="glossary-term">OGC</span><span class="glossary-def">Open Geospatial Consortium. Organización que define los estándares de interoperabilidad GIS.</span></div>
+          <div class="glossary-item"><span class="glossary-term">GetMap</span><span class="glossary-def">Tipo de petición WMS: "dame una imagen del mapa en esta zona".</span></div>
+          <div class="glossary-item"><span class="glossary-term">Workspace</span><span class="glossary-def">Carpeta organizativa en GeoServer. Las capas se identifican como workspace:nombre.</span></div>
+          <div class="glossary-item"><span class="glossary-term">bbox</span><span class="glossary-def">Bounding Box. Rectángulo que define la zona geográfica de la petición.</span></div>
+          <div class="glossary-item"><span class="glossary-term">EPSG:4326</span><span class="glossary-def">Sistema de coordenadas geográficas (latitud/longitud en grados). El más común en WMS.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Drawer</span><span class="glossary-def">Panel lateral deslizante en Flutter. Ideal para controles secundarios como lista de capas.</span></div>
+          <div class="glossary-item"><span class="glossary-term">SwitchListTile</span><span class="glossary-def">Widget con título y un switch on/off. Perfecto para activar/desactivar capas.</span></div>
+        </div>
+      </div>
+
+      <div class="practice">
+        <span class="practice-chip">💻 Práctica 07</span>
+        <div class="practice-title">Tu primera capa WMS</div>
+        <ol class="practice-steps">
+          <li>Conecta tu app al GeoServer del curso usando <code>WMSTileLayerOptions</code>. Recuerda el <code>?</code> al final.</li>
+          <li>Muestra una capa WMS de departamentos sobre tu mapa base OSM. Verifica que el fondo sea transparente.</li>
+          <li>Agrega al menos 2 capas WMS más (ríos, carreteras u otras disponibles en el servidor).</li>
+          <li>Implementa un Drawer con <code>SwitchListTile</code> para activar/desactivar cada capa.</li>
+          <li>Verifica que las capas se superponen correctamente sobre el mapa base.</li>
+        </ol>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">✅ Checklist — Clase 07</h2>
+        <ul class="checklist">
+          <li><span class="ck-box"></span> App conectada a GeoServer real</li>
+          <li><span class="ck-box"></span> Al menos una capa WMS visible sobre mapa base</li>
+          <li><span class="ck-box"></span> Capas con fondo transparente</li>
+          <li><span class="ck-box"></span> Drawer con switches para toggle de capas</li>
+          <li><span class="ck-box"></span> Múltiples capas simultáneas</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CLASE 08
+         ═══════════════════════════════════════════════════════ -->
+    <div id="t-clase08" class="tab-panel">
+
+      <div class="sec">
+        <h2 class="sec-heading">🎯 Objetivo</h2>
+        <p class="sec-lead">Filtrar datos del servidor con CQL, consultar atributos de features al tocar el mapa, y mostrar la leyenda de las capas WMS.</p>
+      </div>
+
+      <!-- CQL -->
+      <div class="sec">
+        <h2 class="sec-heading">🔍 Filtros CQL — Consultar datos en el servidor</h2>
+
+        <div class="card">
+          <div class="card-title">¿Qué es CQL?</div>
+          <p>CQL = Common Query Language. Es un lenguaje para <strong>filtrar datos en el servidor antes de que los envíe</strong>. En vez de descargar todos los municipios de Bolivia y filtrar en tu app, le dices al servidor: "solo mándame los de La Paz".</p>
+
+          <p style="margin-top:10px;">Si conoces SQL, CQL es muy similar a la cláusula WHERE:</p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;">
+            <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+              <strong style="color:var(--amber-500); font-size:0.82rem;">SQL (QGIS/PostgreSQL)</strong><br>
+              <code style="font-size:0.8rem;">WHERE depto = 'La Paz'</code>
+            </div>
+            <div style="background:var(--teal-glow); padding:14px; border-radius:var(--radius-sm);">
+              <strong style="color:var(--teal-400); font-size:0.82rem;">CQL (GeoServer)</strong><br>
+              <code style="font-size:0.8rem;">CQL_FILTER=depto='La Paz'</code>
+            </div>
+          </div>
+
+          <div class="callout callout--tip">
+            <span class="callout-icon">💡</span>
+            <div><strong>¿Por qué filtrar en el servidor?</strong> Porque es más eficiente. En vez de enviar 1000 municipios y que tu app descarte 900, el servidor solo envía los 100 que necesitas. Menos datos = más rápido.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Aplicar CQL en flutter_map</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">TileLayer</span>(
+  wmsOptions: <span class="hl-tp">WMSTileLayerOptions</span>(
+    baseUrl: <span class="hl-st">'https://miservidor.com/geoserver/wms?'</span>,
+    layers: [<span class="hl-st">'workspace:municipios'</span>],
+    transparent: <span class="hl-kw">true</span>,
+    format: <span class="hl-st">'image/png'</span>,
+    otherParameters: {
+      <span class="hl-st">'CQL_FILTER'</span>: <span class="hl-st">"departamento='La Paz'"</span>,
+    },
+  ),
+),</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Ejemplos de filtros CQL</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">CQL</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Por valor exacto de texto</span>
+departamento='La Paz'
+
+<span class="hl-cm">// Por rango numérico</span>
+poblacion>100000
+
+<span class="hl-cm">// Combinados con AND</span>
+departamento='La Paz' AND poblacion>50000
+
+<span class="hl-cm">// Por proximidad geográfica (10 km de un punto)</span>
+DWITHIN(geometria, POINT(-68.15 -16.50), 10000, meters)</pre>
+          </div>
+          <div class="callout callout--warn">
+            <span class="callout-icon">⚠️</span>
+            <div>Los nombres de campos deben coincidir <strong>exactamente</strong> con los del servidor. Si en GeoServer el campo se llama <code>depto</code>, no puedes poner <code>departamento</code>. Verifica los nombres en la previsualización de GeoServer.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GetFeatureInfo -->
+      <div class="sec">
+        <h2 class="sec-heading">👆 GetFeatureInfo — Consultar atributos al tocar</h2>
+
+        <div class="card">
+          <div class="card-title">¿Qué es GetFeatureInfo?</div>
+          <p>Es otro tipo de petición WMS. En vez de pedir una imagen (<code>GetMap</code>), pides <strong>información del feature que está en un punto específico</strong>. Es como la herramienta "Identificar" de QGIS: haces clic en un polígono y ves sus atributos.</p>
+
+          <p style="margin-top:12px;">El flujo es:</p>
+          <div style="background:var(--bg-surface); padding:16px; border-radius:var(--radius-sm); margin:12px 0; border:1px solid var(--border-subtle);">
+            <p style="margin:0; font-size:0.88rem; line-height:2;">
+              1. El usuario toca el mapa → obtienes coordenadas (píxel)<br>
+              2. Tu app construye una URL GetFeatureInfo con esas coordenadas<br>
+              3. El servidor responde con los atributos en formato JSON<br>
+              4. Tu app muestra los atributos en un diálogo
+            </p>
+          </div>
+
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">yaml — pubspec.yaml</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>dependencies:
+  http: ^1.2.0   # ← NUEVO: para hacer peticiones HTTP</pre>
+          </div>
+
+          <div class="card" style="margin-top:16px;">
+            <div class="card-title">¿Qué es el paquete http?</div>
+            <p><code>http</code> es un paquete que permite a tu app hacer peticiones a servidores web — como abrir una URL y leer la respuesta. Lo necesitamos porque GetFeatureInfo devuelve datos JSON (no una imagen como GetMap).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leyenda -->
+      <div class="sec">
+        <h2 class="sec-heading">🎨 Leyenda WMS</h2>
+
+        <div class="card">
+          <div class="card-title">El servidor genera la leyenda automáticamente</div>
+          <p>GeoServer puede generar una imagen de la leyenda de cualquier capa. Solo necesitas pedirla con el tipo de petición <code>GetLegendGraphic</code>:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">String</span> <span class="hl-fn">urlLeyenda</span>(<span class="hl-tp">String</span> capa) {
+  <span class="hl-kw">return</span> <span class="hl-st">'https://miservidor.com/geoserver/wms?'</span>
+    <span class="hl-st">'service=WMS&version=1.1.1'</span>
+    <span class="hl-st">'&request=GetLegendGraphic'</span>
+    <span class="hl-st">'&layer=workspace:$capa'</span>
+    <span class="hl-st">'&format=image/png'</span>;
+}
+
+<span class="hl-cm">// Mostrar como imagen en tu app</span>
+<span class="hl-tp">Image</span>.<span class="hl-fn">network</span>(<span class="hl-fn">urlLeyenda</span>(<span class="hl-st">'departamentos'</span>))</pre>
+          </div>
+          <div class="gis-analogy">Es la leyenda del mapa — exactamente como la que ves en QGIS abajo de cada capa. Pero generada por el servidor.</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📖 Glosario — Clase 08</h2>
+        <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">CQL</span><span class="glossary-def">Common Query Language. Lenguaje para filtrar datos en el servidor. Similar al WHERE de SQL.</span></div>
+          <div class="glossary-item"><span class="glossary-term">CQL_FILTER</span><span class="glossary-def">Parámetro WMS que envía el filtro CQL al servidor.</span></div>
+          <div class="glossary-item"><span class="glossary-term">GetFeatureInfo</span><span class="glossary-def">Petición WMS que devuelve los atributos del feature en un punto específico.</span></div>
+          <div class="glossary-item"><span class="glossary-term">GetLegendGraphic</span><span class="glossary-def">Petición WMS que devuelve la imagen de la leyenda de una capa.</span></div>
+          <div class="glossary-item"><span class="glossary-term">JSON</span><span class="glossary-def">Formato de texto estructurado para intercambiar datos. GetFeatureInfo responde en JSON.</span></div>
+          <div class="glossary-item"><span class="glossary-term">http (paquete)</span><span class="glossary-def">Paquete de Flutter para hacer peticiones HTTP a servidores web.</span></div>
+          <div class="glossary-item"><span class="glossary-term">DWITHIN</span><span class="glossary-def">Filtro CQL espacial: "features dentro de X metros de un punto".</span></div>
+        </div>
+      </div>
+
+      <div class="practice">
+        <span class="practice-chip">💻 Práctica 08</span>
+        <div class="practice-title">Filtros y Consultas WMS</div>
+        <ol class="practice-steps">
+          <li>Agrega un filtro CQL a una capa para mostrar solo los municipios de un departamento.</li>
+          <li>Implementa un <code>TextField</code> en el Drawer donde el usuario pueda escribir el nombre del departamento a filtrar.</li>
+          <li>Implementa GetFeatureInfo: al tocar el mapa sobre una capa WMS, muestra los atributos en un diálogo.</li>
+          <li>Muestra la leyenda WMS de al menos una capa en el Drawer.</li>
+        </ol>
+      </div>
+
+      <div class="challenge">
+        <span class="challenge-chip">🚀 Reto Extra — Selector dinámico</span>
+        <div class="card-title" style="color:var(--text-primary); margin-bottom:8px;">Filtro por DropdownButton</div>
+        <p style="font-size:0.9rem;">Crea un DropdownButton con la lista de departamentos. Al seleccionar uno, actualiza el CQL_FILTER de la capa WMS dinámicamente sin necesidad de escribir texto.</p>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">✅ Checklist — Clase 08</h2>
+        <ul class="checklist">
+          <li><span class="ck-box"></span> Filtro CQL aplicado a una capa</li>
+          <li><span class="ck-box"></span> TextField para escribir filtro dinámico</li>
+          <li><span class="ck-box"></span> GetFeatureInfo muestra atributos al tocar</li>
+          <li><span class="ck-box"></span> Leyenda WMS visible</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CUESTIONARIO
+         ═══════════════════════════════════════════════════════ -->
+    <div id="t-quiz4" class="tab-panel">
+
+      <div class="sec">
+        <h2 class="sec-heading">📝 Autoevaluación — Módulo 4</h2>
+        <p class="sec-lead">Verifica tu comprensión de GeoServer, WMS, CQL y consultas.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="quiz-heading">🧠 Cuestionario — 8 preguntas</div>
+
+        <div class="quiz-q" data-qi="1" data-ans="b" data-explain="GeoServer sirve imágenes renderizadas. Tu app no descarga los datos originales.">
+          <p class="quiz-q-text"><span class="quiz-q-num">1.</span> ¿Qué recibe tu app cuando pide una capa WMS?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> El shapefile original</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Una imagen PNG del mapa</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Una base de datos PostGIS</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Coordenadas en texto</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="2" data-ans="d" data-explain="flutter_map construye la URL agregando parámetros después del ?">
+          <p class="quiz-q-text"><span class="quiz-q-num">2.</span> ¿Por qué la baseUrl del WMS debe terminar en <code>?</code>?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Es decorativo</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Indica que el servidor es seguro</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Activa el modo transparente</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> flutter_map agrega parámetros después del ?</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="3" data-ans="a" data-explain="workspace:nombre_capa es el formato de identificación de capas en GeoServer.">
+          <p class="quiz-q-text"><span class="quiz-q-num">3.</span> ¿Cómo se identifica una capa en GeoServer?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> workspace:nombre_capa</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> /ruta/archivo.shp</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Solo el nombre</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Por su ID numérico</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="4" data-ans="c" data-explain="CQL filtra en el servidor — solo envía los datos que cumplen el filtro.">
+          <p class="quiz-q-text"><span class="quiz-q-num">4.</span> ¿Cuál es la ventaja de filtrar con CQL en vez de filtrar en la app?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> La imagen es más bonita</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Es más fácil de escribir</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> El servidor envía menos datos = más rápido</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> No hay ventaja</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="5" data-ans="b" data-explain="GetMap devuelve una imagen. GetFeatureInfo devuelve atributos (datos).">
+          <p class="quiz-q-text"><span class="quiz-q-num">5.</span> ¿Cuál es la diferencia entre GetMap y GetFeatureInfo?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> No hay diferencia</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> GetMap = imagen, GetFeatureInfo = atributos</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> GetFeatureInfo es más rápido</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> GetMap solo funciona con satélite</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="6" data-ans="a" data-explain="Los textos en CQL van entre comillas simples. Los números no llevan comillas.">
+          <p class="quiz-q-text"><span class="quiz-q-num">6.</span> ¿Cuál filtro CQL es correcto para textos?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> departamento='La Paz'</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> departamento="La Paz"</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> departamento=La Paz</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> departamento:[La Paz]</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="7" data-ans="c" data-explain="GetLegendGraphic es la petición WMS que devuelve la imagen de la leyenda.">
+          <p class="quiz-q-text"><span class="quiz-q-num">7.</span> ¿Cómo obtienes la leyenda de una capa WMS?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> La dibujas manualmente</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Con GetMap y parámetro legend=true</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Con request=GetLegendGraphic</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> GeoServer no genera leyendas</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="8" data-ans="d" data-explain="El paquete http permite hacer peticiones HTTP para recibir datos JSON del servidor.">
+          <p class="quiz-q-text"><span class="quiz-q-num">8.</span> ¿Para qué necesitas el paquete http en este módulo?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Para cargar tiles del mapa</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Para conectar el GPS</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Para el filtro CQL</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Para hacer peticiones GetFeatureInfo y leer el JSON</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <button class="quiz-submit">Verificar Respuestas</button>
+        <div class="quiz-result"></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <a href="../modulo-03/index.html" class="btn-nav btn-prev">← Módulo 3</a>
+      <a href="../modulo-05/index.html" class="btn-nav btn-next">Módulo 5 — Captura de Datos →</a>
+    </div>
+
+  </main>
+</div>
+<script src="../js/course.js"></script>
+</body>
+</html>
