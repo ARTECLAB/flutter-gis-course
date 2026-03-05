@@ -57,6 +57,7 @@ class _MapaScreenState extends State<MapaScreen>
     with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey _mapKey = GlobalKey(); // Key para tamaño real del mapa
 
   // ── Mapa ──
   final LatLng _centroInicial = const LatLng(-16.5000, -68.1500);
@@ -146,16 +147,28 @@ class _MapaScreenState extends State<MapaScreen>
   }
 
   // ── WMS GetFeatureInfo ──
-  Future<void> _consultarWMS(LatLng punto) async {
-    final bounds = _mapController.camera.visibleBounds;
-    final size = MediaQuery.of(context).size;
+  Future<void> _consultarWMS(TapPosition tapPos, LatLng punto) async {
+    // 1. Tamaño REAL del widget del mapa (no de la pantalla)
+    final RenderBox? mapBox =
+        _mapKey.currentContext?.findRenderObject() as RenderBox?;
+    if (mapBox == null) return;
+    final Size mapSize = mapBox.size;
 
-    final x = ((punto.longitude - bounds.west) /
-            (bounds.east - bounds.west) * size.width)
+    // 2. BBOX visible
+    final bounds = _mapController.camera.visibleBounds;
+    final int width = mapSize.width.round();
+    final int height = mapSize.height.round();
+
+    // 3. Convertir coordenada geográfica a píxel X,Y
+    //    Y invertido: en imagen el 0 está arriba
+    final int x = ((punto.longitude - bounds.west) /
+            (bounds.east - bounds.west) * width)
         .round();
-    final y = ((bounds.north - punto.latitude) /
-            (bounds.north - bounds.south) * size.height)
+    final int y = ((bounds.north - punto.latitude) /
+            (bounds.north - bounds.south) * height)
         .round();
+
+    if (x < 0 || x >= width || y < 0 || y >= height) return;
 
     // Buscar la primera capa WMS activa para consultar
     String? capaConsulta;
@@ -164,15 +177,20 @@ class _MapaScreenState extends State<MapaScreen>
     }
     if (capaConsulta == null) return;
 
+    // 4. Construir URL — BBOX para WMS 1.1.1: west,south,east,north
+    final String bbox =
+        '${bounds.west},${bounds.south},${bounds.east},${bounds.north}';
+
     final url = Uri.parse(
-      '${_geoserverBase}service=WMS&version=1.1.1&request=GetFeatureInfo'
-      '&layers=$_workspace:$capaConsulta'
-      '&query_layers=$_workspace:$capaConsulta'
-      '&info_format=application/json'
-      '&x=$x&y=$y'
-      '&width=${size.width.round()}&height=${size.height.round()}'
-      '&bbox=${bounds.west},${bounds.south},${bounds.east},${bounds.north}'
-      '&srs=EPSG:4326',
+      '${_geoserverBase}SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo'
+      '&LAYERS=$_workspace:$capaConsulta'
+      '&QUERY_LAYERS=$_workspace:$capaConsulta'
+      '&SRS=EPSG:4326&FORMAT=image/png'
+      '&BBOX=$bbox'
+      '&WIDTH=$width&HEIGHT=$height'
+      '&INFO_FORMAT=application/json'
+      '&FEATURE_COUNT=5'
+      '&X=$x&Y=$y',
     );
 
     try {
@@ -189,7 +207,10 @@ class _MapaScreenState extends State<MapaScreen>
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: props.entries.map<Widget>((e) {
+                  children: (props as Map<String, dynamic>)
+                      .entries
+                      .where((e) => e.key != 'bbox' && e.value != null)
+                      .map<Widget>((e) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3),
                       child: Text('${e.key}: ${e.value}',
@@ -203,6 +224,15 @@ class _MapaScreenState extends State<MapaScreen>
                     child: const Text('Cerrar'),
                   ),
                 ],
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No se encontraron datos en este punto'),
+                duration: Duration(seconds: 2),
               ),
             );
           }
@@ -329,11 +359,12 @@ class _MapaScreenState extends State<MapaScreen>
             child: Stack(
               children: [
                 FlutterMap(
+                  key: _mapKey, // Key para obtener tamaño real del mapa
                   mapController: _mapController,
                   options: MapOptions(
                     initialCenter: _centroInicial,
                     initialZoom: 14.0,
-                    onTap: (_, latLng) => _consultarWMS(latLng),
+                    onTap: _consultarWMS,
                     onLongPress: (_, latLng) {},
                     onPositionChanged: (cam, _) {
                       setState(() {

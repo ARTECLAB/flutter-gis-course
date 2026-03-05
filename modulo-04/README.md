@@ -173,37 +173,73 @@ DWITHIN(geometria, POINT(-68.15 -16.50), 10000, meters)
 
 ### Parte 2 — GetFeatureInfo (25 min)
 
-Consulta atributos del feature donde el usuario tocó:
+Consulta atributos del feature donde el usuario tocó el mapa.
+
+⚠️ **Punto crítico:** GetFeatureInfo necesita WIDTH/HEIGHT del mapa y X,Y del píxel tocado.
+NO uses `MediaQuery.of(context).size` — eso da el tamaño de toda la pantalla, no del mapa.
+Usa un `GlobalKey` en el FlutterMap para obtener el tamaño real del widget del mapa.
 
 ```dart
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-Future<void> _consultarFeature(LatLng punto) async {
-  final bbox = _mapController.camera.visibleBounds;
-  final size = MediaQuery.of(context).size;
+// Declarar en el State:
+final GlobalKey _mapKey = GlobalKey();
 
-  final x = ((punto.longitude - bbox.west) /
-    (bbox.east - bbox.west) * size.width).round();
-  final y = ((bbox.north - punto.latitude) /
-    (bbox.north - bbox.south) * size.height).round();
+// En el build, asignar el key al FlutterMap:
+// FlutterMap(key: _mapKey, mapController: _mapController, ...)
+
+Future<void> _consultarFeature(TapPosition tapPos, LatLng punto) async {
+  // 1. Tamaño REAL del widget del mapa (no de la pantalla)
+  final RenderBox? mapBox =
+      _mapKey.currentContext?.findRenderObject() as RenderBox?;
+  if (mapBox == null) return;
+  final Size mapSize = mapBox.size;
+
+  // 2. BBOX visible del mapa
+  final bounds = _mapController.camera.visibleBounds;
+
+  final int width = mapSize.width.round();
+  final int height = mapSize.height.round();
+
+  // 3. Convertir coordenada geográfica a píxel X,Y
+  //    Y va invertido: en imagen el 0 está arriba, en geo el norte es mayor
+  final int x = ((punto.longitude - bounds.west) /
+      (bounds.east - bounds.west) * width).round();
+  final int y = ((bounds.north - punto.latitude) /
+      (bounds.north - bounds.south) * height).round();
+
+  // 4. Validar rango
+  if (x < 0 || x >= width || y < 0 || y >= height) return;
+
+  // 5. Construir URL — BBOX para WMS 1.1.1: west,south,east,north
+  final String bbox =
+      '${bounds.west},${bounds.south},${bounds.east},${bounds.north}';
 
   final url = Uri.parse(
     'https://miservidor.com/geoserver/wms?'
-    'service=WMS&version=1.1.1&request=GetFeatureInfo'
-    '&layers=workspace:municipios'
-    '&query_layers=workspace:municipios'
-    '&info_format=application/json'
-    '&x=$x&y=$y'
-    '&width=${size.width.round()}&height=${size.height.round()}'
-    '&bbox=${bbox.west},${bbox.south},${bbox.east},${bbox.north}'
-    '&srs=EPSG:4326'
+    'SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo'
+    '&LAYERS=workspace:municipios'
+    '&QUERY_LAYERS=workspace:municipios'
+    '&SRS=EPSG:4326&FORMAT=image/png'
+    '&BBOX=$bbox'
+    '&WIDTH=$width&HEIGHT=$height'
+    '&INFO_FORMAT=application/json'
+    '&FEATURE_COUNT=5'
+    '&X=$x&Y=$y'
   );
 
-  final resp = await http.get(url);
-  if (resp.statusCode == 200) {
-    final data = json.decode(resp.body);
-    _mostrarAtributos(data);
+  try {
+    final resp = await http.get(url);
+    if (resp.statusCode == 200) {
+      final data = json.decode(resp.body);
+      final features = data['features'] as List?;
+      if (features != null && features.isNotEmpty) {
+        _mostrarAtributos(features[0]['properties']);
+      }
+    }
+  } catch (e) {
+    debugPrint('Error GetFeatureInfo: $e');
   }
 }
 ```
@@ -212,6 +248,12 @@ Future<void> _consultarFeature(LatLng punto) async {
 ```yaml
   http: ^1.2.0
 ```
+
+**Verificación previa:** Antes de codear, prueba la URL de GetFeatureInfo directamente en el navegador con valores fijos de BBOX, WIDTH, HEIGHT, X, Y. Si el navegador devuelve JSON con features, el servidor está bien configurado.
+
+**Requisitos del servidor:**
+- GeoServer con **CORS habilitado** (sin CORS la app no puede conectarse)
+- Capa marcada como **Queryable** en la configuración WMS de GeoServer
 
 ### Parte 3 — Leyenda WMS (15 min)
 
