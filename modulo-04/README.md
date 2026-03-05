@@ -173,87 +173,336 @@ DWITHIN(geometria, POINT(-68.15 -16.50), 10000, meters)
 
 ### Parte 2 — GetFeatureInfo (25 min)
 
-Consulta atributos del feature donde el usuario tocó el mapa.
+#### ¿Qué es GetFeatureInfo?
 
-⚠️ **Punto crítico:** GetFeatureInfo necesita WIDTH/HEIGHT del mapa y X,Y del píxel tocado.
-NO uses `MediaQuery.of(context).size` — eso da el tamaño de toda la pantalla, no del mapa.
-Usa un `GlobalKey` en el FlutterMap para obtener el tamaño real del widget del mapa.
+Es una petición WMS que dice: "en este punto del mapa, ¿qué feature hay y cuáles son sus atributos?". Es el equivalente exacto de la herramienta **Identificar** de QGIS — haces clic en un polígono y ves sus campos.
+
+A diferencia de GetMap (que devuelve una imagen), GetFeatureInfo devuelve **datos** — generalmente en formato JSON.
+
+#### El flujo completo
+
+```
+1. Usuario toca el mapa
+   ↓
+2. flutter_map te da las coordenadas geográficas (LatLng)
+   ↓
+3. Tu código convierte LatLng → píxel X,Y dentro de una imagen virtual
+   ↓
+4. Construyes una URL GetFeatureInfo con BBOX, WIDTH, HEIGHT, X, Y
+   ↓
+5. Envías la URL al GeoServer con http.get()
+   ↓
+6. GeoServer responde con JSON que contiene los atributos
+   ↓
+7. Tu app muestra los atributos en un diálogo
+```
+
+#### Ejemplo de respuesta JSON de GeoServer
+
+Cuando haces la petición GetFeatureInfo, el servidor responde algo así:
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "municipios.153",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [[[[-68.12, -16.48], [-68.13, -16.49], ...]]]
+      },
+      "properties": {
+        "nombre": "La Paz",
+        "departamento": "La Paz",
+        "poblacion": 877363,
+        "superficie_km2": 2012,
+        "codigo_ine": "020101"
+      }
+    }
+  ]
+}
+```
+
+Lo que nos interesa es `features[0]['properties']` — ahí están los atributos del feature.
+
+Si `features` está vacío `[]`, significa que el usuario tocó donde no hay ningún feature de esa capa (ejemplo: tocó fuera de los límites municipales).
+
+#### El cálculo de X, Y — por qué es el punto crítico
+
+GetFeatureInfo no recibe coordenadas geográficas directamente. Recibe la posición en **píxeles** dentro de una imagen virtual. Necesitas decirle al servidor:
+
+- "Imagina una imagen de **WIDTH x HEIGHT** píxeles"
+- "Que representa esta zona geográfica (**BBOX**)"
+- "Dime qué feature está en el píxel **X, Y** de esa imagen"
+
+La fórmula de conversión:
+
+```
+X = (longitud_tocada - bbox_west) / (bbox_east - bbox_west) × WIDTH
+Y = (bbox_north - latitud_tocada) / (bbox_north - bbox_south) × HEIGHT
+```
+
+⚠️ **Y está invertido** porque en una imagen el píxel 0 está en la esquina SUPERIOR izquierda, pero en coordenadas geográficas el norte (arriba) tiene valores mayores.
+
+⚠️ **NO uses `MediaQuery.of(context).size`** — eso da el tamaño de toda la pantalla (incluyendo AppBar y barra inferior). Usa un `GlobalKey` en el FlutterMap para obtener el tamaño real del widget del mapa solamente.
+
+#### Dependencia necesaria
+
+```yaml
+dependencies:
+  http: ^1.2.0
+```
+
+```bash
+flutter pub get
+```
+
+#### Código completo — Paso a paso
+
+**Paso 1: Declarar el GlobalKey en el State**
+
+```dart
+final GlobalKey _mapKey = GlobalKey();
+```
+
+**Paso 2: Asignar el key al FlutterMap**
+
+```dart
+FlutterMap(
+  key: _mapKey,  // ← Esto permite obtener el tamaño real del widget
+  mapController: _mapController,
+  options: MapOptions(
+    initialCenter: _centroInicial,
+    initialZoom: 14.0,
+    onTap: _consultarFeature,  // ← Conectar con GetFeatureInfo
+  ),
+  children: [ /* capas... */ ],
+)
+```
+
+**Paso 3: La función GetFeatureInfo completa**
 
 ```dart
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-// Declarar en el State:
-final GlobalKey _mapKey = GlobalKey();
-
-// En el build, asignar el key al FlutterMap:
-// FlutterMap(key: _mapKey, mapController: _mapController, ...)
-
 Future<void> _consultarFeature(TapPosition tapPos, LatLng punto) async {
-  // 1. Tamaño REAL del widget del mapa (no de la pantalla)
+  // 1. Obtener el tamaño REAL del widget del mapa
   final RenderBox? mapBox =
       _mapKey.currentContext?.findRenderObject() as RenderBox?;
   if (mapBox == null) return;
   final Size mapSize = mapBox.size;
 
-  // 2. BBOX visible del mapa
+  // 2. Obtener el BBOX visible del mapa
   final bounds = _mapController.camera.visibleBounds;
 
+  // 3. Definir WIDTH y HEIGHT de la imagen virtual
   final int width = mapSize.width.round();
   final int height = mapSize.height.round();
 
-  // 3. Convertir coordenada geográfica a píxel X,Y
-  //    Y va invertido: en imagen el 0 está arriba, en geo el norte es mayor
+  // 4. Convertir coordenada geográfica a píxel X, Y
   final int x = ((punto.longitude - bounds.west) /
       (bounds.east - bounds.west) * width).round();
   final int y = ((bounds.north - punto.latitude) /
       (bounds.north - bounds.south) * height).round();
 
-  // 4. Validar rango
+  // 5. Validar que X,Y están dentro del rango válido
   if (x < 0 || x >= width || y < 0 || y >= height) return;
 
-  // 5. Construir URL — BBOX para WMS 1.1.1: west,south,east,north
+  // 6. Construir BBOX string para WMS 1.1.1: west,south,east,north
   final String bbox =
       '${bounds.west},${bounds.south},${bounds.east},${bounds.north}';
 
+  // 7. Construir la URL completa de GetFeatureInfo
   final url = Uri.parse(
     'https://miservidor.com/geoserver/wms?'
-    'SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo'
+    'SERVICE=WMS'
+    '&VERSION=1.1.1'
+    '&REQUEST=GetFeatureInfo'
     '&LAYERS=workspace:municipios'
     '&QUERY_LAYERS=workspace:municipios'
-    '&SRS=EPSG:4326&FORMAT=image/png'
+    '&STYLES='
+    '&SRS=EPSG:4326'
+    '&FORMAT=image/png'
     '&BBOX=$bbox'
-    '&WIDTH=$width&HEIGHT=$height'
+    '&WIDTH=$width'
+    '&HEIGHT=$height'
     '&INFO_FORMAT=application/json'
     '&FEATURE_COUNT=5'
-    '&X=$x&Y=$y'
+    '&X=$x'
+    '&Y=$y'
   );
 
+  debugPrint('GetFeatureInfo URL: $url');
+
+  // 8. Hacer la petición HTTP
   try {
     final resp = await http.get(url);
+
     if (resp.statusCode == 200) {
       final data = json.decode(resp.body);
       final features = data['features'] as List?;
+
       if (features != null && features.isNotEmpty) {
-        _mostrarAtributos(features[0]['properties']);
+        // Hay un feature — mostrar sus atributos
+        final props = features[0]['properties'] as Map<String, dynamic>;
+        _mostrarAtributos(props, punto);
+      } else {
+        // No hay feature en ese punto
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se encontraron datos en este punto'),
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
+    } else {
+      debugPrint('Error HTTP: ${resp.statusCode}');
+      debugPrint('Respuesta: ${resp.body}');
     }
   } catch (e) {
     debugPrint('Error GetFeatureInfo: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error de conexión: $e')),
+    );
   }
 }
 ```
 
-**Dependencia:**
-```yaml
-  http: ^1.2.0
+**Paso 4: Widget que muestra los atributos**
+
+```dart
+void _mostrarAtributos(Map<String, dynamic> props, LatLng coordenada) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (ctx) {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Encabezado
+            Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.teal),
+                const SizedBox(width: 8),
+                const Text('Atributos del Feature',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Spacer(),
+                IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(ctx)),
+              ],
+            ),
+            const Divider(),
+            // Coordenada tocada
+            Text(
+              'Coordenada: ${coordenada.latitude.toStringAsFixed(5)}, '
+              '${coordenada.longitude.toStringAsFixed(5)}',
+              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 12),
+            // Lista de atributos
+            ...props.entries
+                .where((e) => e.key != 'bbox' && e.value != null)
+                .map((e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 130,
+                            child: Text(e.key,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.teal,
+                                    fontSize: 13)),
+                          ),
+                          Expanded(
+                            child: Text('${e.value}',
+                                style: const TextStyle(fontSize: 13)),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ],
+        ),
+      );
+    },
+  );
+}
 ```
 
-**Verificación previa:** Antes de codear, prueba la URL de GetFeatureInfo directamente en el navegador con valores fijos de BBOX, WIDTH, HEIGHT, X, Y. Si el navegador devuelve JSON con features, el servidor está bien configurado.
+#### Cómo probar antes de codear
 
-**Requisitos del servidor:**
-- GeoServer con **CORS habilitado** (sin CORS la app no puede conectarse)
-- Capa marcada como **Queryable** en la configuración WMS de GeoServer
+Antes de implementar en Flutter, verifica que tu GeoServer responde correctamente.
+Pega esta URL en el **navegador** (reemplazando con tu servidor y capa):
+
+```
+https://tu-servidor.com/geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=workspace:municipios&QUERY_LAYERS=workspace:municipios&SRS=EPSG:4326&FORMAT=image/png&BBOX=-69,-18,-67,-15&WIDTH=400&HEIGHT=600&INFO_FORMAT=application/json&FEATURE_COUNT=5&X=200&Y=300
+```
+
+Si el navegador devuelve un JSON con `features`, el servidor funciona.
+Si da error o HTML, revisa la configuración del GeoServer.
+
+También puedes probar con un GeoServer público de ejemplo:
+```
+https://ows.terrestris.de/geoserver/wms
+```
+Con capas como `osm:water-areas`.
+
+#### Requisitos del servidor
+
+- **CORS habilitado** en GeoServer — sin esto, la app Android no puede conectarse al servidor. Se configura en el archivo `web.xml` del GeoServer.
+- **Capa marcada como Queryable** — En GeoServer: Capas → tu capa → pestaña Publishing → sección WMS Settings → checkbox "Queryable".
+- **Formato `application/json` soportado** — La mayoría de GeoServer modernos lo soportan por defecto.
+
+#### Alternativa más robusta: WFS GetFeature
+
+GeoServer mismo recomienda usar WFS en vez de GetFeatureInfo cuando sea posible, porque WFS es más flexible y no depende del cálculo de píxeles. Con WFS envías coordenadas geográficas directamente:
+
+```dart
+Future<void> _consultarWFS(TapPosition tapPos, LatLng punto) async {
+  // Buffer de ~100m alrededor del punto tocado
+  final double buffer = 0.001;
+  final String cql =
+      'INTERSECTS(geometria, '
+      'POLYGON(('
+      '${punto.longitude - buffer} ${punto.latitude - buffer}, '
+      '${punto.longitude + buffer} ${punto.latitude - buffer}, '
+      '${punto.longitude + buffer} ${punto.latitude + buffer}, '
+      '${punto.longitude - buffer} ${punto.latitude + buffer}, '
+      '${punto.longitude - buffer} ${punto.latitude - buffer}'
+      ')))';
+
+  final url = Uri.parse(
+    'https://miservidor.com/geoserver/wfs?'
+    'SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature'
+    '&TYPENAMES=workspace:municipios'
+    '&OUTPUTFORMAT=application/json'
+    '&CQL_FILTER=${Uri.encodeComponent(cql)}'
+    '&COUNT=1'
+  );
+
+  final resp = await http.get(url);
+  if (resp.statusCode == 200) {
+    final data = json.decode(resp.body);
+    if (data['features'] != null && data['features'].isNotEmpty) {
+      _mostrarAtributos(data['features'][0]['properties'], punto);
+    }
+  }
+}
+```
+
+**Ventajas de WFS:** No necesitas calcular X,Y ni WIDTH/HEIGHT. Usas coordenadas directamente. Más preciso y funciona igual en cualquier zoom o tamaño de pantalla.
+
+**Desventaja:** Necesitas saber el nombre exacto del campo de geometría de la capa (en el ejemplo: `geometria`). Verifícalo en la previsualización de GeoServer.
 
 ### Parte 3 — Leyenda WMS (15 min)
 
