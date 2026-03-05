@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo 5 · Captura de Datos — ARTECLAB</title>
+  <link rel="stylesheet" href="../css/course.css">
+  <link rel="icon" href="../img/logo-arteclab.png" type="image/png">
+</head>
+<body>
+<div class="site-wrapper">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index.html" class="topbar-brand">
+        <img src="../img/logo-arteclab.png" alt="ARTECLAB">
+        <span>/</span>
+        <span class="brand-course">Flutter GIS</span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index.html">Inicio</a>
+        <a href="../modulo-04/index.html">Módulo 4</a>
+        <a href="index.html" class="active">Módulo 5</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <div class="mod-header">
+      <span class="mod-chip">Módulo 5 de 6</span>
+      <h1 class="mod-title">Captura de Datos<br>GPS & Visualización 📍🗂️</h1>
+      <p class="mod-desc">Formularios de campo, almacenamiento local, lista de registros y vista combinada mapa + datos. Tu app se convierte en herramienta profesional.</p>
+      <div class="mod-stats">
+        <span class="mod-stat">📅 Clases 9 y 10</span>
+        <span class="mod-stat">⏱️ 4 horas</span>
+        <span class="mod-stat">🎯 Intermedio</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-target="t-clase09">Clase 09 — Formularios y Almacenamiento</button>
+      <button class="tab-btn" data-target="t-clase10">Clase 10 — Lista y Vista Combinada</button>
+      <button class="tab-btn" data-target="t-quiz5">📝 Cuestionario</button>
+    </div>
+
+    <!-- ═══ CLASE 09 ═══ -->
+    <div id="t-clase09" class="tab-panel active">
+
+      <div class="sec">
+        <h2 class="sec-heading">🎯 Objetivo</h2>
+        <p class="sec-lead">Crear un formulario profesional para capturar puntos de campo con atributos, validar los datos, y guardarlos de forma persistente en el teléfono.</p>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📋 ¿Por qué necesitamos formularios?</h2>
+        <div class="card">
+          <div class="card-title">Una coordenada sola no sirve de mucho</div>
+          <p>Capturar un punto GPS sin atributos es como tomar una foto sin descripción. En trabajo de campo necesitas registrar: ¿Qué tipo de punto es? ¿En qué estado está? ¿Alguna observación? Esos datos son los <strong>atributos</strong>.</p>
+          <div class="gis-analogy">En QGIS, cuando digitalizas un punto, se abre una ventana donde llenas los campos de la tabla de atributos. En tu app, se abre un formulario.</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">🧩 Widgets de Formulario</h2>
+
+        <div class="card">
+          <div class="card-title">Form y GlobalKey — El contenedor y su control remoto</div>
+          <p><code>Form</code> es un widget que agrupa todos los campos del formulario. <code>GlobalKey&lt;FormState&gt;</code> es como un control remoto: te permite validar todos los campos a la vez con un solo comando.</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">final</span> _formKey = <span class="hl-tp">GlobalKey</span>&lt;<span class="hl-tp">FormState</span>&gt;();
+
+<span class="hl-tp">Form</span>(
+  key: _formKey,
+  child: <span class="hl-tp">Column</span>(children: [
+    <span class="hl-cm">// Aquí van los campos...</span>
+  ]),
+)
+
+<span class="hl-cm">// Validar TODO el formulario con una sola línea:</span>
+<span class="hl-kw">if</span> (_formKey.currentState!.<span class="hl-fn">validate</span>()) {
+  <span class="hl-cm">// Todos los campos son válidos — guardar</span>
+}</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">TextFormField — Campo de texto con validación</div>
+          <p>Es un campo donde el usuario escribe texto. El <code>validator</code> verifica si el dato es válido y muestra un mensaje de error rojo si no lo es.</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">final</span> _nombreCtrl = <span class="hl-tp">TextEditingController</span>();
+
+<span class="hl-tp">TextFormField</span>(
+  controller: _nombreCtrl,
+  decoration: <span class="hl-kw">const</span> <span class="hl-tp">InputDecoration</span>(
+    labelText: <span class="hl-st">'Nombre del punto'</span>,
+    hintText: <span class="hl-st">'Ej: Poste eléctrico #42'</span>,
+    prefixIcon: <span class="hl-tp">Icon</span>(<span class="hl-tp">Icons</span>.label),
+    border: <span class="hl-tp">OutlineInputBorder</span>(),
+  ),
+  validator: (valor) {
+    <span class="hl-kw">if</span> (valor == <span class="hl-kw">null</span> || valor.isEmpty) {
+      <span class="hl-kw">return</span> <span class="hl-st">'El nombre es obligatorio'</span>;
+    }
+    <span class="hl-kw">return null</span>; <span class="hl-cm">// null = válido</span>
+  },
+)</pre>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">💡</span>
+            <div><strong>¿Qué es un TextEditingController?</strong> Es un objeto que "controla" un campo de texto. Te permite leer lo que escribió el usuario (<code>_nombreCtrl.text</code>) y también escribir valores por código. Cada campo de texto necesita su propio controller.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">DropdownButtonFormField — Selector de opciones</div>
+          <p>Un menú desplegable con opciones predefinidas. Ideal para campos como "tipo" o "categoría" donde las opciones son fijas.</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">String</span>? _tipo; <span class="hl-cm">// null = nada seleccionado</span>
+
+<span class="hl-tp">DropdownButtonFormField</span>&lt;<span class="hl-tp">String</span>&gt;(
+  value: _tipo,
+  decoration: <span class="hl-kw">const</span> <span class="hl-tp">InputDecoration</span>(
+    labelText: <span class="hl-st">'Tipo de punto'</span>,
+    border: <span class="hl-tp">OutlineInputBorder</span>(),
+  ),
+  items: [<span class="hl-st">'Poste'</span>, <span class="hl-st">'Árbol'</span>, <span class="hl-st">'Edificio'</span>, <span class="hl-st">'Muestra'</span>]
+    .<span class="hl-fn">map</span>((t) =&gt; <span class="hl-tp">DropdownMenuItem</span>(value: t, child: <span class="hl-tp">Text</span>(t)))
+    .<span class="hl-fn">toList</span>(),
+  onChanged: (v) =&gt; <span class="hl-fn">setState</span>(() =&gt; _tipo = v),
+  validator: (v) =&gt; v == <span class="hl-kw">null</span> ? <span class="hl-st">'Selecciona un tipo'</span> : <span class="hl-kw">null</span>,
+)</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">RadioListTile — Opciones excluyentes</div>
+          <p>Cuando solo se puede elegir UNA opción de un grupo (bueno/regular/malo).</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">String</span> _estado = <span class="hl-st">'Bueno'</span>;
+
+...[<span class="hl-st">'Bueno'</span>, <span class="hl-st">'Regular'</span>, <span class="hl-st">'Malo'</span>].<span class="hl-fn">map</span>((e) =&gt;
+  <span class="hl-tp">RadioListTile</span>(
+    title: <span class="hl-tp">Text</span>(e),
+    value: e,
+    groupValue: _estado,
+    onChanged: (v) =&gt; <span class="hl-fn">setState</span>(() =&gt; _estado = v!),
+  ),
+)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">💾 Almacenamiento Local — SharedPreferences</h2>
+
+        <div class="card">
+          <div class="card-title">¿Por qué guardar datos localmente?</div>
+          <p>En campo muchas veces <strong>no hay internet</strong>. Los datos deben guardarse en el teléfono y <strong>persistir aunque cierres la app</strong>. SharedPreferences guarda datos como texto (JSON) en el almacenamiento interno del teléfono.</p>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">💡</span>
+            <div><strong>¿Qué es JSON?</strong> Es un formato de texto para representar datos estructurados. Tu lista de puntos se convierte en texto JSON para guardarse, y se reconvierte a lista de Dart al cargarse. Es como guardar una tabla de Excel como archivo CSV — los datos se convierten a texto.</div>
+          </div>
+
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">yaml — pubspec.yaml</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>dependencies:
+  shared_preferences: ^2.2.0</pre>
+          </div>
+
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">import</span> <span class="hl-st">'package:shared_preferences/shared_preferences.dart'</span>;
+<span class="hl-kw">import</span> <span class="hl-st">'dart:convert'</span>;
+
+<span class="hl-cm">// GUARDAR — convierte lista a JSON y guarda</span>
+<span class="hl-tp">Future</span>&lt;<span class="hl-kw">void</span>&gt; <span class="hl-fn">_guardarPuntos</span>() <span class="hl-kw">async</span> {
+  <span class="hl-kw">final</span> prefs = <span class="hl-kw">await</span> <span class="hl-tp">SharedPreferences</span>.<span class="hl-fn">getInstance</span>();
+  <span class="hl-kw">final</span> texto = json.<span class="hl-fn">encode</span>(_puntos);
+  <span class="hl-kw">await</span> prefs.<span class="hl-fn">setString</span>(<span class="hl-st">'puntos_campo'</span>, texto);
+}
+
+<span class="hl-cm">// CARGAR — lee JSON y convierte a lista</span>
+<span class="hl-tp">Future</span>&lt;<span class="hl-kw">void</span>&gt; <span class="hl-fn">_cargarPuntos</span>() <span class="hl-kw">async</span> {
+  <span class="hl-kw">final</span> prefs = <span class="hl-kw">await</span> <span class="hl-tp">SharedPreferences</span>.<span class="hl-fn">getInstance</span>();
+  <span class="hl-kw">final</span> texto = prefs.<span class="hl-fn">getString</span>(<span class="hl-st">'puntos_campo'</span>);
+  <span class="hl-kw">if</span> (texto != <span class="hl-kw">null</span>) {
+    <span class="hl-fn">setState</span>(() {
+      _puntos = (json.<span class="hl-fn">decode</span>(texto) <span class="hl-kw">as</span> <span class="hl-tp">List</span>)
+        .<span class="hl-fn">map</span>((e) =&gt; <span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">dynamic</span>&gt;.<span class="hl-fn">from</span>(e))
+        .<span class="hl-fn">toList</span>();
+    });
+  }
+}</pre>
+          </div>
+
+          <div class="callout callout--warn">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>Llama <code>_guardarPuntos()</code> después de cada cambio</strong> (agregar, editar, eliminar). Si solo modificas la lista en memoria pero no guardas, los cambios se pierden al cerrar la app.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📖 Glosario — Clase 09</h2>
+        <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">Form</span><span class="glossary-def">Widget contenedor que agrupa campos de formulario y permite validarlos todos a la vez.</span></div>
+          <div class="glossary-item"><span class="glossary-term">GlobalKey</span><span class="glossary-def">"Control remoto" del formulario. Permite llamar validate() desde cualquier parte.</span></div>
+          <div class="glossary-item"><span class="glossary-term">validator</span><span class="glossary-def">Función que verifica si un campo es válido. Retorna null si OK, o un mensaje de error.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Controller</span><span class="glossary-def">Objeto que controla un campo de texto. Permite leer y escribir su valor.</span></div>
+          <div class="glossary-item"><span class="glossary-term">SharedPreferences</span><span class="glossary-def">Almacenamiento local del teléfono. Guarda datos como texto que persisten al cerrar la app.</span></div>
+          <div class="glossary-item"><span class="glossary-term">JSON</span><span class="glossary-def">Formato de texto para representar datos estructurados. Se usa para guardar y transmitir datos.</span></div>
+          <div class="glossary-item"><span class="glossary-term">encode/decode</span><span class="glossary-def">encode = convertir datos a texto JSON. decode = convertir texto JSON a datos de Dart.</span></div>
+          <div class="glossary-item"><span class="glossary-term">RadioListTile</span><span class="glossary-def">Widget de opción exclusiva. Solo se puede seleccionar una de un grupo.</span></div>
+        </div>
+      </div>
+
+      <div class="practice">
+        <span class="practice-chip">💻 Práctica 09</span>
+        <div class="practice-title">Formulario de Captura</div>
+        <ol class="practice-steps">
+          <li>Crea una pantalla <code>FormularioPunto</code> con campos: nombre (texto), tipo (dropdown con 5 opciones), estado (radio: bueno/regular/malo), observación (texto multilínea).</li>
+          <li>Implementa validación: nombre y tipo son obligatorios. Muestra mensajes de error rojos.</li>
+          <li>Al presionar "Guardar", crea un Map con todos los datos + coordenadas GPS + fecha, agrega a la lista y cierra el formulario.</li>
+          <li>Guarda la lista en SharedPreferences después de cada captura.</li>
+          <li>Al iniciar la app, carga los puntos guardados con <code>_cargarPuntos()</code> en <code>initState()</code>.</li>
+        </ol>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">✅ Checklist — Clase 09</h2>
+        <ul class="checklist">
+          <li><span class="ck-box"></span> Formulario con TextFormField, Dropdown, Radio</li>
+          <li><span class="ck-box"></span> Validación funcional con mensajes de error</li>
+          <li><span class="ck-box"></span> Datos se guardan en SharedPreferences</li>
+          <li><span class="ck-box"></span> Datos persisten al cerrar y abrir la app</li>
+          <li><span class="ck-box"></span> Punto capturado aparece como marcador en el mapa</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══ CLASE 10 ═══ -->
+    <div id="t-clase10" class="tab-panel">
+
+      <div class="sec">
+        <h2 class="sec-heading">🎯 Objetivo</h2>
+        <p class="sec-lead">Crear una lista de registros capturados, implementar eliminación, y combinar la vista de mapa con la lista de datos usando navegación de pestañas.</p>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📋 Lista de Registros con ListView.builder</h2>
+
+        <div class="card">
+          <div class="card-title">¿Qué es ListView.builder?</div>
+          <p>Es un widget que crea una lista scrolleable. <code>.builder</code> significa que construye cada elemento bajo demanda — solo los que están visibles en pantalla. Es eficiente aunque tengas 1000 registros.</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">ListView</span>.<span class="hl-fn">builder</span>(
+  itemCount: _puntos.length,
+  itemBuilder: (ctx, i) {
+    <span class="hl-kw">final</span> p = _puntos[i];
+    <span class="hl-kw">return</span> <span class="hl-tp">ListTile</span>(
+      leading: <span class="hl-tp">Icon</span>(<span class="hl-tp">Icons</span>.location_on),
+      title: <span class="hl-tp">Text</span>(p[<span class="hl-st">'nombre'</span>]),
+      subtitle: <span class="hl-tp">Text</span>(<span class="hl-st">'${p['tipo']} · ${p['estado']}'</span>),
+    );
+  },
+)</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Dismissible — Eliminar deslizando</div>
+          <p>Envuelve cada elemento en <code>Dismissible</code> para que el usuario pueda eliminarlo deslizando hacia un lado. Es el patrón estándar de Android para borrar.</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">Dismissible</span>(
+  key: <span class="hl-tp">Key</span>(p[<span class="hl-st">'id'</span>].<span class="hl-fn">toString</span>()),
+  direction: <span class="hl-tp">DismissDirection</span>.endToStart,
+  background: <span class="hl-tp">Container</span>(
+    color: <span class="hl-tp">Colors</span>.red,
+    alignment: <span class="hl-tp">Alignment</span>.centerRight,
+    padding: <span class="hl-kw">const</span> <span class="hl-tp">EdgeInsets</span>.<span class="hl-fn">only</span>(right: <span class="hl-nm">20</span>),
+    child: <span class="hl-kw">const</span> <span class="hl-tp">Icon</span>(<span class="hl-tp">Icons</span>.delete, color: <span class="hl-tp">Colors</span>.white),
+  ),
+  onDismissed: (_) {
+    <span class="hl-fn">setState</span>(() =&gt; _puntos.<span class="hl-fn">removeAt</span>(i));
+    <span class="hl-fn">_guardarPuntos</span>();
+  },
+  child: <span class="hl-tp">ListTile</span>(<span class="hl-cm">/* ... */</span>),
+)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">🧭 Navegación entre Pantallas</h2>
+
+        <div class="card">
+          <div class="card-title">Navigator — El sistema de pantallas de Flutter</div>
+          <p>Tu app tiene varias pantallas: Mapa, Formulario, Lista. <strong>Navigator</strong> es el sistema que controla la navegación entre ellas. Funciona como un stack (pila) de cartas:</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;">
+            <div style="background:var(--teal-glow); padding:14px; border-radius:var(--radius-sm); text-align:center;">
+              <strong style="color:var(--teal-400);">push</strong><br>
+              <span style="font-size:0.85rem;">Pone una pantalla nueva encima.<br>"Ir al formulario"</span>
+            </div>
+            <div style="background:rgba(245,158,11,0.08); padding:14px; border-radius:var(--radius-sm); text-align:center;">
+              <strong style="color:var(--amber-500);">pop</strong><br>
+              <span style="font-size:0.85rem;">Quita la pantalla de encima.<br>"Volver atrás"</span>
+            </div>
+          </div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Ir al formulario</span>
+<span class="hl-tp">Navigator</span>.<span class="hl-fn">push</span>(context, <span class="hl-tp">MaterialPageRoute</span>(
+  builder: (_) =&gt; <span class="hl-tp">FormularioPunto</span>(posicion: _gps!),
+));
+
+<span class="hl-cm">// Volver atrás (dentro del formulario)</span>
+<span class="hl-tp">Navigator</span>.<span class="hl-fn">pop</span>(context);</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📱 BottomNavigationBar — Mapa ↔ Lista</h2>
+
+        <div class="card">
+          <div class="card-title">Barra inferior con pestañas</div>
+          <p>Como Google Maps tiene "Explorar" y "Guardados" abajo, tu app tendrá "Mapa" y "Datos". El usuario toca la pestaña y cambia de vista.</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">int</span> _pantalla = <span class="hl-nm">0</span>;
+
+<span class="hl-tp">Scaffold</span>(
+  body: <span class="hl-tp">IndexedStack</span>(
+    index: _pantalla,
+    children: [
+      _buildMapa(),   <span class="hl-cm">// índice 0</span>
+      _buildLista(),  <span class="hl-cm">// índice 1</span>
+    ],
+  ),
+  bottomNavigationBar: <span class="hl-tp">BottomNavigationBar</span>(
+    currentIndex: _pantalla,
+    onTap: (i) =&gt; <span class="hl-fn">setState</span>(() =&gt; _pantalla = i),
+    items: <span class="hl-kw">const</span> [
+      <span class="hl-tp">BottomNavigationBarItem</span>(
+        icon: <span class="hl-tp">Icon</span>(<span class="hl-tp">Icons</span>.map), label: <span class="hl-st">'Mapa'</span>),
+      <span class="hl-tp">BottomNavigationBarItem</span>(
+        icon: <span class="hl-tp">Icon</span>(<span class="hl-tp">Icons</span>.list), label: <span class="hl-st">'Datos'</span>),
+    ],
+  ),
+)</pre>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">💡</span>
+            <div><strong>¿Qué es IndexedStack?</strong> Es un widget que tiene varios hijos pero solo muestra uno a la vez (el del índice indicado). Los demás están ocultos pero <strong>mantienen su estado</strong> — el mapa no se reinicia al cambiar a la lista.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📖 Glosario — Clase 10</h2>
+        <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">ListView.builder</span><span class="glossary-def">Lista scrolleable que construye elementos bajo demanda. Eficiente para muchos registros.</span></div>
+          <div class="glossary-item"><span class="glossary-term">ListTile</span><span class="glossary-def">Widget de fila estándar con ícono, título, subtítulo y acción.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Dismissible</span><span class="glossary-def">Widget que permite eliminar un elemento deslizándolo hacia un lado.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Navigator</span><span class="glossary-def">Sistema de Flutter para moverse entre pantallas. push = ir, pop = volver.</span></div>
+          <div class="glossary-item"><span class="glossary-term">MaterialPageRoute</span><span class="glossary-def">Define la transición animada al navegar a una nueva pantalla.</span></div>
+          <div class="glossary-item"><span class="glossary-term">BottomNavigationBar</span><span class="glossary-def">Barra inferior con pestañas para cambiar entre vistas principales.</span></div>
+          <div class="glossary-item"><span class="glossary-term">IndexedStack</span><span class="glossary-def">Muestra un solo hijo a la vez pero mantiene el estado de todos.</span></div>
+          <div class="glossary-item"><span class="glossary-term">initState()</span><span class="glossary-def">Método que se ejecuta UNA vez al crear el widget. Ideal para cargar datos iniciales.</span></div>
+        </div>
+      </div>
+
+      <div class="practice">
+        <span class="practice-chip">💻 Práctica 10</span>
+        <div class="practice-title">Lista y Vista Combinada</div>
+        <ol class="practice-steps">
+          <li>Crea la vista de lista con <code>ListView.builder</code> mostrando nombre, tipo, estado y coordenadas.</li>
+          <li>Implementa <code>Dismissible</code> para eliminar registros deslizando. No olvides guardar después de eliminar.</li>
+          <li>Agrega un botón "Ver en mapa" que cambie a la pestaña del mapa y centre en ese punto.</li>
+          <li>Implementa <code>BottomNavigationBar</code> con pestañas Mapa y Datos.</li>
+          <li>Muestra el contador de puntos en la pestaña Datos (badge).</li>
+        </ol>
+      </div>
+
+      <div class="challenge">
+        <span class="challenge-chip">🚀 Reto Extra — Búsqueda</span>
+        <div class="card-title" style="color:var(--text-primary); margin-bottom:8px;">Filtrar puntos por nombre</div>
+        <p style="font-size:0.9rem;">Agrega un TextField de búsqueda arriba de la lista que filtre los puntos por nombre o tipo en tiempo real mientras el usuario escribe.</p>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">✅ Checklist — Clase 10</h2>
+        <ul class="checklist">
+          <li><span class="ck-box"></span> Lista de puntos con ListView.builder</li>
+          <li><span class="ck-box"></span> Eliminar deslizando (Dismissible)</li>
+          <li><span class="ck-box"></span> Botón "Ver en mapa" funcional</li>
+          <li><span class="ck-box"></span> BottomNavigationBar Mapa ↔ Lista</li>
+          <li><span class="ck-box"></span> Datos persisten entre sesiones</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══ CUESTIONARIO ═══ -->
+    <div id="t-quiz5" class="tab-panel">
+      <div class="sec">
+        <h2 class="sec-heading">📝 Autoevaluación — Módulo 5</h2>
+        <p class="sec-lead">Verifica tu comprensión de formularios, persistencia y navegación.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="quiz-heading">🧠 Cuestionario — 8 preguntas</div>
+
+        <div class="quiz-q" data-qi="1" data-ans="c" data-explain="GlobalKey<FormState> permite llamar validate() para verificar todos los campos del formulario.">
+          <p class="quiz-q-text"><span class="quiz-q-num">1.</span> ¿Para qué sirve GlobalKey&lt;FormState&gt;?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Para crear un campo de texto</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Para guardar datos en el teléfono</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Para validar todos los campos del formulario a la vez</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Para navegar entre pantallas</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="2" data-ans="a" data-explain="Retorna null si el campo es válido, o un String con el mensaje de error.">
+          <p class="quiz-q-text"><span class="quiz-q-num">2.</span> ¿Qué retorna un validator cuando el campo es válido?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> null</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> true</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> "OK"</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> 0</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="3" data-ans="b" data-explain="SharedPreferences guarda datos en el almacenamiento interno del teléfono.">
+          <p class="quiz-q-text"><span class="quiz-q-num">3.</span> ¿Dónde guarda datos SharedPreferences?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> En un servidor de internet</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> En el almacenamiento interno del teléfono</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> En la memoria RAM (se pierde al cerrar)</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> En una base de datos SQL</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="4" data-ans="d" data-explain="json.encode convierte datos de Dart a texto JSON para guardarlos.">
+          <p class="quiz-q-text"><span class="quiz-q-num">4.</span> ¿Qué hace json.encode()?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Cifra datos por seguridad</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Comprime archivos</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Convierte texto JSON a datos de Dart</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Convierte datos de Dart a texto JSON</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="5" data-ans="a" data-explain="Navigator.push pone una nueva pantalla encima. Navigator.pop la quita.">
+          <p class="quiz-q-text"><span class="quiz-q-num">5.</span> ¿Cómo navegas a una nueva pantalla?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Navigator.push()</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Navigator.pop()</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> setState()</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Navigator.move()</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="6" data-ans="c" data-explain="Dismissible permite deslizar un elemento para eliminarlo.">
+          <p class="quiz-q-text"><span class="quiz-q-num">6.</span> ¿Cómo se elimina un elemento deslizando en Flutter?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Con onDelete</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Con GestureDetector</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Con Dismissible</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Con SwipeToDelete</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="7" data-ans="b" data-explain="IndexedStack mantiene el estado de todos los hijos aunque solo muestre uno.">
+          <p class="quiz-q-text"><span class="quiz-q-num">7.</span> ¿Por qué usamos IndexedStack en vez de cambiar widgets directamente?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Es más rápido</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Mantiene el estado del mapa al cambiar a la lista</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Es obligatorio con BottomNavigationBar</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> No hay diferencia</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="8" data-ans="d" data-explain="initState() se ejecuta una sola vez al crear el widget. Ideal para cargar datos.">
+          <p class="quiz-q-text"><span class="quiz-q-num">8.</span> ¿Dónde llamas _cargarPuntos() para que se ejecute al abrir la app?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> En build()</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> En dispose()</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> En setState()</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> En initState()</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <button class="quiz-submit">Verificar Respuestas</button>
+        <div class="quiz-result"></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <a href="../modulo-04/index.html" class="btn-nav btn-prev">← Módulo 4</a>
+      <a href="../modulo-06/index.html" class="btn-nav btn-next">Módulo 6 — Exportación & APK →</a>
+    </div>
+
+  </main>
+</div>
+<script src="../js/course.js"></script>
+</body>
+</html>
