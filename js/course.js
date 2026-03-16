@@ -244,18 +244,26 @@ document.addEventListener('DOMContentLoaded', () => {
      El estudiante puede usar el sitio con normalidad. */
 
   document.addEventListener('keydown', function(e) {
-    // Ctrl+U = ver código fuente
-    if (e.ctrlKey && e.key === 'u') { e.preventDefault(); return; }
-    // Ctrl+Shift+I = DevTools (Elements)
-    if (e.ctrlKey && e.shiftKey && e.key === 'I') { e.preventDefault(); return; }
-    // Ctrl+Shift+J = DevTools (Console)
-    if (e.ctrlKey && e.shiftKey && e.key === 'J') { e.preventDefault(); return; }
-    // Ctrl+Shift+C = DevTools (Inspector)
-    if (e.ctrlKey && e.shiftKey && e.key === 'C') { e.preventDefault(); return; }
+    var mod = e.ctrlKey || e.metaKey; // Ctrl (Win/Linux) o ⌘ (macOS)
+ 
+    // Ctrl/⌘ + U = ver código fuente
+    if (mod && e.key === 'u') { e.preventDefault(); return; }
+    // Ctrl/⌘ + S = guardar página como archivo
+    if (mod && e.key === 's') { e.preventDefault(); return; }
+    // Ctrl/⌘ + Shift + I = DevTools (Elements)
+    if (mod && e.shiftKey && e.key === 'I') { e.preventDefault(); return; }
+    // Ctrl/⌘ + Shift + J = DevTools (Console)
+    if (mod && e.shiftKey && e.key === 'J') { e.preventDefault(); return; }
+    // Ctrl/⌘ + Shift + C = DevTools (Inspector)
+    if (mod && e.shiftKey && e.key === 'C') { e.preventDefault(); return; }
+    // Ctrl/⌘ + Option/Alt + I = DevTools (macOS Chrome)
+    if (mod && e.altKey && e.key === 'i') { e.preventDefault(); return; }
+    // Ctrl/⌘ + Option/Alt + J = Console (macOS Chrome)
+    if (mod && e.altKey && e.key === 'j') { e.preventDefault(); return; }
+    // Ctrl/⌘ + Option/Alt + U = ver fuente (macOS Firefox)
+    if (mod && e.altKey && e.key === 'u') { e.preventDefault(); return; }
     // F12 = DevTools
     if (e.key === 'F12') { e.preventDefault(); return; }
-    // Ctrl+S = guardar página como archivo
-    if (e.ctrlKey && e.key === 's') { e.preventDefault(); return; }
   });
 
   // Bloquear clic derecho solo para evitar "Ver código fuente"
