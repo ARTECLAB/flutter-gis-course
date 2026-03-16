@@ -243,25 +243,26 @@ document.addEventListener('DOMContentLoaded', () => {
      NO bloquea: copiar texto, seleccionar, links, imprimir.
      El estudiante puede usar el sitio con normalidad. */
 
-  document.addEventListener('keydown', function(e) {
-    var mod = e.ctrlKey || e.metaKey; // Ctrl (Win/Linux) o ⌘ (macOS)
+ document.addEventListener('keydown', function(e) {
+    var mod = e.ctrlKey || e.metaKey;
+    var k = e.key.toLowerCase();
  
     // Ctrl/⌘ + U = ver código fuente
-    if (mod && e.key === 'u') { e.preventDefault(); return; }
+    if (mod && k === 'u' && !e.shiftKey && !e.altKey) { e.preventDefault(); return; }
     // Ctrl/⌘ + S = guardar página como archivo
-    if (mod && e.key === 's') { e.preventDefault(); return; }
+    if (mod && k === 's') { e.preventDefault(); return; }
     // Ctrl/⌘ + Shift + I = DevTools (Elements)
-    if (mod && e.shiftKey && e.key === 'I') { e.preventDefault(); return; }
+    if (mod && e.shiftKey && k === 'i') { e.preventDefault(); return; }
     // Ctrl/⌘ + Shift + J = DevTools (Console)
-    if (mod && e.shiftKey && e.key === 'J') { e.preventDefault(); return; }
+    if (mod && e.shiftKey && k === 'j') { e.preventDefault(); return; }
     // Ctrl/⌘ + Shift + C = DevTools (Inspector)
-    if (mod && e.shiftKey && e.key === 'C') { e.preventDefault(); return; }
+    if (mod && e.shiftKey && k === 'c') { e.preventDefault(); return; }
     // Ctrl/⌘ + Option/Alt + I = DevTools (macOS Chrome)
-    if (mod && e.altKey && e.key === 'i') { e.preventDefault(); return; }
+    if (mod && e.altKey && k === 'i') { e.preventDefault(); return; }
     // Ctrl/⌘ + Option/Alt + J = Console (macOS Chrome)
-    if (mod && e.altKey && e.key === 'j') { e.preventDefault(); return; }
+    if (mod && e.altKey && k === 'j') { e.preventDefault(); return; }
     // Ctrl/⌘ + Option/Alt + U = ver fuente (macOS Firefox)
-    if (mod && e.altKey && e.key === 'u') { e.preventDefault(); return; }
+    if (mod && e.altKey && k === 'u') { e.preventDefault(); return; }
     // F12 = DevTools
     if (e.key === 'F12') { e.preventDefault(); return; }
   });
