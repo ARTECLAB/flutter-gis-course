@@ -30,7 +30,7 @@ Debes ver algo como: `git version 2.43.0`
 
 ### Paso 2 — Instalar Flutter SDK
 
-1. Ve a https://docs.flutter.dev/get-started/install/windows/mobile
+1. Ve a https://docs.flutter.dev/install/quick
 2. Descarga el archivo ZIP del Flutter SDK
 3. Extrae el ZIP en una carpeta **sin espacios** en la ruta. Recomendado:
 
