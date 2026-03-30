@@ -9,7 +9,6 @@
 </head>
 <body>
 <div class="site-wrapper">
-
   <header class="topbar">
     <div class="topbar-inner">
       <a href="../index.html" class="topbar-brand">
@@ -26,7 +25,6 @@
   </header>
 
   <main class="container">
-
     <div class="mod-header">
       <span class="mod-chip">Módulo 3 de 6</span>
       <h1 class="mod-title">GPS & Geolocalización<br>Real 📍</h1>
@@ -35,6 +33,7 @@
         <span class="mod-stat">📅 Clases 5 y 6</span>
         <span class="mod-stat">⏱️ 4 horas</span>
         <span class="mod-stat">🎯 Intermedio</span>
+        <span class="mod-stat">📦 geolocator 14.0.2</span>
       </div>
     </div>
 
@@ -51,16 +50,15 @@
 
       <div class="sec">
         <h2 class="sec-heading">🎯 Objetivo</h2>
-        <p class="sec-lead">Conectar el GPS real de tu teléfono a la app, gestionar los permisos de Android y mostrar tu posición sobre el mapa.</p>
+        <p class="sec-lead">Conectar el GPS real de tu teléfono a la app, gestionar los permisos de Android correctamente y mostrar tu posición sobre el mapa.</p>
       </div>
 
       <!-- ── Concepto: GPS ── -->
       <div class="sec">
         <h2 class="sec-heading">📡 ¿Cómo funciona el GPS en una app?</h2>
-
         <div class="card">
           <div class="card-title">El GPS es un sensor de hardware</div>
-          <p>Tu teléfono tiene un chip GPS adentro. Este chip recibe señales de satélites en el espacio y calcula tu posición exacta (latitud y longitud). Es el mismo principio que un GPS Garmin que se usa en campo, pero integrado en el teléfono.</p>
+          <p>Tu teléfono tiene un chip GPS adentro. Este chip recibe señales de satélites en el espacio y calcula tu posición exacta (latitud y longitud) mediante <strong>trilateración</strong> — necesita al menos 4 satélites para obtener una posición 3D. Es el mismo principio que un GPS Garmin de campo, pero integrado en el teléfono.</p>
 
           <p style="margin-top:14px;">Para que tu app acceda al GPS necesita <strong>3 cosas obligatorias</strong>:</p>
 
@@ -78,40 +76,83 @@
             <div style="background:rgba(59,130,246,0.08); padding:16px; border-radius:var(--radius-sm); text-align:center;">
               <div style="font-size:1.6rem; margin-bottom:6px;">3️⃣</div>
               <strong style="color:var(--blue-500); font-size:0.85rem;">GPS encendido</strong><br>
-              <span style="font-size:0.8rem;">El GPS del teléfono debe estar activado.</span>
+              <span style="font-size:0.8rem;">El sensor GPS del teléfono debe estar activado.</span>
             </div>
           </div>
 
           <div class="callout callout--danger">
             <span class="callout-icon">⚠️</span>
-            <div>Si falta <strong>cualquiera</strong> de estas 3 cosas, la app no puede obtener coordenadas. Tu código debe verificar las 3 y mostrar un mensaje claro al usuario si algo falta.</div>
+            <div>Si falta <strong>cualquiera</strong> de estas 3 cosas, la app no puede obtener coordenadas. Tu código debe verificar las 3 condiciones y mostrar un mensaje claro al usuario si algo falta.</div>
           </div>
 
-          <div class="gis-analogy">Es como conectar un GPS Garmin en campo: primero lo enciendes, luego esperas que conecte con satélites, y finalmente obtienes las coordenadas. En el teléfono es igual pero más rápido.</div>
+          <div class="gis-analogy">Es como preparar equipo para salir a campo: primero verificas que el GPS tenga baterías (sensor encendido), que tenga señal de satélites (servicio habilitado), y que tengas la llave del equipo (permiso). Sin cualquiera de los tres, no trabajas.</div>
         </div>
       </div>
 
       <!-- ── Instalar geolocator ── -->
       <div class="sec">
-        <h2 class="sec-heading">📦 Instalar el paquete geolocator</h2>
+        <h2 class="sec-heading">📦 Instalar y configurar geolocator</h2>
 
         <div class="card">
           <div class="card-title">¿Qué es geolocator?</div>
-          <p>Es un paquete de Flutter que te da acceso al GPS del teléfono. Maneja toda la complejidad de hablar con el hardware — tú solo le pides la posición y él te la da.</p>
+          <p>Es el paquete estándar de Flutter para geolocalización. Funciona en Android, iOS, Web, Windows, macOS y Linux. Te da acceso al GPS sin escribir código nativo — tú le pides la posición y él maneja toda la complejidad del hardware.</p>
 
+          <p style="margin-top:10px;">Usamos la <strong>versión 14.0.2</strong> (la más reciente). Nos permite:</p>
+          <ul style="margin:8px 0 0 20px; font-size:0.9rem; line-height:1.7;">
+            <li><code>getCurrentPosition()</code> — Lectura única (como tomar un waypoint)</li>
+            <li><code>getPositionStream()</code> — Flujo continuo (como un tracklog)</li>
+            <li><code>getLastKnownPosition()</code> — Última posición guardada (instantánea)</li>
+            <li><code>distanceBetween()</code> — Distancia entre 2 puntos (Haversine)</li>
+            <li><code>bearingBetween()</code> — Rumbo/azimut entre 2 puntos</li>
+            <li>Verificación y solicitud de permisos</li>
+            <li><code>openAppSettings()</code> / <code>openLocationSettings()</code> — Redirigir a configuración</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Paso 1 — Agregar la dependencia</div>
           <div class="codeblock">
             <div class="codeblock-bar"><span class="codeblock-lang">yaml — pubspec.yaml</span><button class="codeblock-copy">Copiar</button></div>
             <pre>dependencies:
+  cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
-  flutter_map: ^7.0.2
-  latlong2: ^0.9.1
-  flutter_map_marker_popup: ^7.0.0
-  geolocator: ^12.0.0              # ← NUEVO</pre>
+  flutter_map: ^8.2.2
+  flutter_map_marker_popup:
+  latlong2:
+  geolocator: ^14.0.2              # ← NUEVO: GPS del teléfono</pre>
           </div>
           <div class="codeblock">
             <div class="codeblock-bar"><span class="codeblock-lang">Terminal</span><button class="codeblock-copy">Copiar</button></div>
             <pre>flutter pub get</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Paso 2 — Verificar compileSdkVersion (obligatorio)</div>
+          <p>geolocator 14 <strong>requiere</strong> compileSdkVersion 35 en Android. Sin esto, la compilación falla.</p>
+          <p style="margin-top:8px;">Abre <code>android/app/build.gradle</code> y verifica:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Gradle — android/app/build.gradle</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>android {
+    compileSdkVersion 35       // ← DEBE ser 35 para geolocator 14
+    ...
+}</pre>
+          </div>
+
+          <div class="callout callout--danger">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>Si ves un error de compilación</strong> mencionando "SDK version" o "cannot find symbol", lo primero que revisas es este número. También necesitas <strong>Flutter 3.29.0</strong> o superior (<code>flutter --version</code> para verificar).</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Paso 3 — Verificar AndroidX</div>
+          <p>Abre <code>android/gradle.properties</code> y verifica que existan estas líneas (generalmente ya están en proyectos nuevos):</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Properties — android/gradle.properties</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>android.useAndroidX=true
+android.enableJetifier=true</pre>
           </div>
         </div>
       </div>
@@ -122,73 +163,94 @@
 
         <div class="card">
           <div class="card-title">¿Qué son los permisos de Android?</div>
-          <p>Android protege la privacidad del usuario. Si una app quiere acceder a la cámara, GPS, contactos, etc., primero debe <strong>declararlo en su código</strong> y luego <strong>pedirle permiso al usuario</strong>. Es como pedir autorización antes de entrar a un área restringida.</p>
+          <p>Android protege la privacidad del usuario. Si una app quiere acceder a sensores sensibles (GPS, cámara, micrófono), primero debe <strong>declararlo en su código</strong> y luego <strong>pedirle permiso al usuario en tiempo de ejecución</strong>.</p>
 
-          <p style="margin-top:12px;">Hay dos niveles de precisión de GPS:</p>
+          <p style="margin-top:12px;">Existen dos niveles de precisión de ubicación:</p>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0;">
             <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
               <strong style="color:var(--teal-400);">ACCESS_FINE_LOCATION</strong><br>
-              <span style="font-size:0.85rem;">GPS preciso por satélites. Precisión de ~3 metros. <strong>Es el que necesitamos para GIS.</strong></span>
+              <span style="font-size:0.85rem;">GPS satelital. Precisión ~3-10 metros.<br>En Android: <code>PRIORITY_HIGH_ACCURACY</code><br><strong>Es el que necesitamos para GIS.</strong></span>
             </div>
             <div style="background:var(--bg-surface); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
               <strong style="color:var(--amber-500);">ACCESS_COARSE_LOCATION</strong><br>
-              <span style="font-size:0.85rem;">Ubicación aproximada por WiFi y antenas. ~100 metros. No suficiente para GIS.</span>
+              <span style="font-size:0.85rem;">WiFi y antenas celulares. ~100 metros.<br>En Android: <code>PRIORITY_LOW_POWER</code><br>No suficiente para trabajo GIS.</span>
             </div>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">💡</span>
+            <div>La documentación oficial dice: <em>"cuando configuras ambos permisos, el plugin usa ACCESS_FINE_LOCATION"</em>. En Android 12+, el usuario puede elegir "ubicación aproximada" — en ese caso recibirás COARSE aunque pidas FINE. Es decisión del usuario.</div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Paso 1 — Declarar los permisos</div>
+          <div class="card-title">Paso 4 — Declarar los permisos en AndroidManifest.xml</div>
           <p>Abre <code>android/app/src/main/AndroidManifest.xml</code> y agrega <strong>antes</strong> de <code>&lt;application&gt;</code>:</p>
           <div class="codeblock">
             <div class="codeblock-bar"><span class="codeblock-lang">XML — AndroidManifest.xml</span><button class="codeblock-copy">Copiar</button></div>
-            <pre>&lt;uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/&gt;
+            <pre>&lt;!-- Permisos de red (tiles del mapa — ya debería estar) --&gt;
+&lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+
+&lt;!-- Permisos de ubicación GPS --&gt;
+&lt;uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/&gt;
 &lt;uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/&gt;</pre>
           </div>
+
           <div class="callout callout--danger">
             <span class="callout-icon">⚠️</span>
-            <div><strong>Después de cambiar AndroidManifest.xml</strong> necesitas hacer un restart completo de la app (<code>flutter run</code> de nuevo). Hot Reload NO funciona para cambios en AndroidManifest — solo actualiza archivos Dart.</div>
+            <div><strong>Después de cambiar AndroidManifest.xml</strong> necesitas hacer un restart completo (<code>flutter run</code> de nuevo). Hot Reload NO aplica cambios de archivos nativos — solo actualiza código Dart.</div>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">📋</span>
+            <div><strong>Nota avanzada:</strong> Para seguimiento en segundo plano (app minimizada) se necesitan permisos adicionales: <code>ACCESS_BACKGROUND_LOCATION</code> (Android 10+) y <code>FOREGROUND_SERVICE_LOCATION</code> (Android 14+). No los necesitamos en este módulo, pero existen para apps profesionales de campo.</div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Paso 2 — Verificar permisos en Dart</div>
-          <p>Esta función verifica las 3 condiciones necesarias y muestra un mensaje claro si algo falta:</p>
+          <div class="card-title">Paso 5 — Verificar y solicitar permisos en Dart</div>
+          <p>Esta función verifica las 3 condiciones necesarias. Es exactamente el patrón que recomienda la <a href="https://pub.dev/packages/geolocator" target="_blank" rel="noopener">documentación oficial de geolocator</a>:</p>
           <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart — gps_service.dart</span><button class="codeblock-copy">Copiar</button></div>
             <pre><span class="hl-kw">import</span> <span class="hl-st">'package:geolocator/geolocator.dart'</span>;
 
 <span class="hl-cm">/// Verifica las 3 condiciones para usar GPS.</span>
-<span class="hl-cm">/// Retorna true si todo está listo.</span>
-<span class="hl-tp">Future</span>&lt;<span class="hl-tp">bool</span>&gt; <span class="hl-fn">_verificarPermisos</span>() <span class="hl-kw">async</span> {
+<span class="hl-cm">/// Retorna un String con el error, o null si todo está listo.</span>
+<span class="hl-tp">Future</span>&lt;<span class="hl-tp">String</span>?&gt; <span class="hl-fn">verificarPermisos</span>() <span class="hl-kw">async</span> {
+  <span class="hl-tp">bool</span> servicioActivo;
+  <span class="hl-tp">LocationPermission</span> permiso;
 
   <span class="hl-cm">// Condición 1: ¿El GPS del teléfono está encendido?</span>
-  <span class="hl-tp">bool</span> gpsEncendido = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">isLocationServiceEnabled</span>();
-  <span class="hl-kw">if</span> (!gpsEncendido) {
-    <span class="hl-cm">// GPS apagado — no podemos continuar</span>
-    <span class="hl-kw">return false</span>;
+  servicioActivo = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">isLocationServiceEnabled</span>();
+  <span class="hl-kw">if</span> (!servicioActivo) {
+    <span class="hl-kw">return</span> <span class="hl-st">'⚠️ El GPS está apagado. Actívalo en configuración.'</span>;
   }
 
   <span class="hl-cm">// Condición 2: ¿La app tiene permiso del usuario?</span>
-  <span class="hl-tp">LocationPermission</span> permiso = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">checkPermission</span>();
-
+  permiso = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">checkPermission</span>();
   <span class="hl-kw">if</span> (permiso == <span class="hl-tp">LocationPermission</span>.denied) {
-    <span class="hl-cm">// No tiene permiso — solicitarlo al usuario</span>
+    <span class="hl-cm">// Solicitar permiso al usuario</span>
     permiso = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">requestPermission</span>();
     <span class="hl-kw">if</span> (permiso == <span class="hl-tp">LocationPermission</span>.denied) {
-      <span class="hl-kw">return false</span>; <span class="hl-cm">// Usuario dijo que no</span>
+      <span class="hl-kw">return</span> <span class="hl-st">'⚠️ Permiso de ubicación denegado.'</span>;
     }
   }
 
-  <span class="hl-cm">// Condición 3: ¿Fue denegado permanentemente?</span>
+  <span class="hl-cm">// Condición 3: ¿Denegado permanentemente?</span>
   <span class="hl-kw">if</span> (permiso == <span class="hl-tp">LocationPermission</span>.deniedForever) {
-    <span class="hl-cm">// El usuario debe ir a Configuración manualmente</span>
-    <span class="hl-kw">return false</span>;
+    <span class="hl-kw">return</span> <span class="hl-st">'⚠️ Permiso denegado permanentemente. '</span>
+           <span class="hl-st">'Ve a Configuración → Apps → Permisos.'</span>;
   }
 
-  <span class="hl-kw">return true</span>; <span class="hl-cm">// ¡Todo listo!</span>
+  <span class="hl-kw">return null</span>; <span class="hl-cm">// ¡Todo listo! ✅</span>
 }</pre>
           </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">💡</span>
+            <div><strong>¿Y si el usuario denegó permanentemente?</strong> Android NO vuelve a mostrar el diálogo de permiso. Puedes redirigir al usuario a la pantalla de configuración con <code>Geolocator.openAppSettings()</code> o a la configuración de ubicación con <code>Geolocator.openLocationSettings()</code>.</div>
+          </div>
+
           <div class="gis-analogy">Es como verificar tu equipo antes de salir a campo: ¿GPS cargado? ¿Satélites conectados? ¿Precisión aceptable? Si algo falla, no empiezas a levantar datos.</div>
         </div>
       </div>
@@ -198,29 +260,42 @@
         <h2 class="sec-heading">📍 Obtener Tu Posición Actual</h2>
 
         <div class="card">
-          <div class="card-title">¿Qué es getCurrentPosition?</div>
+          <div class="card-title">getCurrentPosition() — Tomar un waypoint</div>
           <p>Es una función que le pregunta al GPS del teléfono: "¿dónde estoy ahora?". El GPS tarda unos segundos en responder (la primera vez puede tardar 5-15 segundos mientras conecta con satélites). Por eso usamos <code>async/await</code> — para esperar la respuesta sin bloquear la app.</p>
 
           <div class="callout callout--info">
             <span class="callout-icon">💡</span>
-            <div><strong>¿Qué es async/await?</strong> Imagina que pides pizza por teléfono. <code>async</code> significa "esta acción toma tiempo". <code>await</code> significa "espera a que llegue la pizza antes de continuar". Mientras esperas, la app sigue funcionando (puedes mover el mapa, tocar botones).</div>
+            <div><strong>¿Qué es async/await?</strong> Imagina que pides pizza por teléfono. <code>async</code> marca una función que toma tiempo. <code>await</code> espera a que llegue el resultado antes de continuar. Mientras esperas, la app sigue funcionando (puedes mover el mapa, tocar botones). Sin <code>await</code>, tu código continuaría ejecutándose sin tener la posición todavía.</div>
+          </div>
+
+          <div class="callout callout--danger">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>API actualizada en geolocator 14:</strong> El parámetro <code>desiredAccuracy</code> fue reemplazado por <code>locationSettings</code>. El código correcto usa <code>LocationSettings(accuracy: LocationAccuracy.high)</code>. Si ves tutoriales con <code>desiredAccuracy:</code> directo, es la API vieja.</div>
           </div>
 
           <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-tp">LatLng</span>? _posicionGPS;     <span class="hl-cm">// Posición actual (null si no hay)</span>
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart — API oficial geolocator 14</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">import</span> <span class="hl-st">'package:geolocator/geolocator.dart'</span>;
+<span class="hl-kw">import</span> <span class="hl-st">'package:latlong2/latlong.dart'</span>;
+
+<span class="hl-tp">LatLng</span>? _posicionGPS;     <span class="hl-cm">// Posición actual (null si no hay)</span>
 <span class="hl-tp">bool</span> _cargandoGPS = <span class="hl-kw">false</span>; <span class="hl-cm">// ¿Estamos esperando al GPS?</span>
 
 <span class="hl-tp">Future</span>&lt;<span class="hl-kw">void</span>&gt; <span class="hl-fn">_obtenerUbicacion</span>() <span class="hl-kw">async</span> {
-  <span class="hl-cm">// Primero verificar permisos</span>
-  <span class="hl-tp">bool</span> listo = <span class="hl-kw">await</span> <span class="hl-fn">_verificarPermisos</span>();
-  <span class="hl-kw">if</span> (!listo) <span class="hl-kw">return</span>;
+  <span class="hl-cm">// Verificar permisos primero</span>
+  <span class="hl-kw">final</span> error = <span class="hl-kw">await</span> <span class="hl-fn">verificarPermisos</span>();
+  <span class="hl-kw">if</span> (error != <span class="hl-kw">null</span>) <span class="hl-kw">return</span>; <span class="hl-cm">// Mostrar error al usuario</span>
 
   <span class="hl-fn">setState</span>(() =&gt; _cargandoGPS = <span class="hl-kw">true</span>);
 
-  <span class="hl-cm">// Pedir posición al GPS</span>
-  <span class="hl-tp">Position</span> pos = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">getCurrentPosition</span>(
-    desiredAccuracy: <span class="hl-tp">LocationAccuracy</span>.high,
+  <span class="hl-cm">// Configuración de la lectura GPS</span>
+  <span class="hl-kw">const</span> <span class="hl-tp">LocationSettings</span> locationSettings = <span class="hl-tp">LocationSettings</span>(
+    accuracy: <span class="hl-tp">LocationAccuracy</span>.high,  <span class="hl-cm">// GPS satelital</span>
+  );
+
+  <span class="hl-cm">// Obtener posición actual</span>
+  <span class="hl-kw">final</span> <span class="hl-tp">Position</span> pos = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">getCurrentPosition</span>(
+    locationSettings: locationSettings,
   );
 
   <span class="hl-fn">setState</span>(() {
@@ -235,14 +310,69 @@
         </div>
 
         <div class="card">
-          <div class="card-title">¿Qué es el signo ? en LatLng?</div>
-          <p><code>LatLng?</code> (con signo de pregunta) significa que esta variable <strong>puede ser null</strong> — es decir, puede no tener valor todavía. Al iniciar la app, no tenemos posición GPS, así que empieza como <code>null</code>. Después de obtener el GPS, le asignamos un valor real.</p>
-          <p style="margin-top:8px;"><code>_posicionGPS!</code> (con signo de exclamación) le dice a Dart: "sé que NO es null en este momento, úsalo sin miedo". Solo usamos <code>!</code> cuando ya verificamos que tiene valor.</p>
+          <div class="card-title">LocationAccuracy — Niveles de precisión</div>
+          <p>El enum <code>LocationAccuracy</code> controla qué tan precisa será la lectura GPS y cuánta batería consume:</p>
+          <div style="overflow-x:auto; margin:12px 0;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+              <thead>
+                <tr style="background:var(--bg-surface); border-bottom:2px solid var(--border-subtle);">
+                  <th style="padding:10px; text-align:left;">Nivel</th>
+                  <th style="padding:10px; text-align:left;">Android (Prioridad)</th>
+                  <th style="padding:10px; text-align:left;">Precisión aprox.</th>
+                  <th style="padding:10px; text-align:left;">Uso</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid var(--border-subtle);">
+                  <td style="padding:8px;"><code>lowest</code></td>
+                  <td style="padding:8px;">PRIORITY_PASSIVE</td>
+                  <td style="padding:8px;">~3 km</td>
+                  <td style="padding:8px;">Solo datos pasivos, sin consumo extra</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);">
+                  <td style="padding:8px;"><code>low</code></td>
+                  <td style="padding:8px;">PRIORITY_LOW_POWER</td>
+                  <td style="padding:8px;">~1 km</td>
+                  <td style="padding:8px;">Solo redes, ahorra batería</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);">
+                  <td style="padding:8px;"><code>medium</code></td>
+                  <td style="padding:8px;">PRIORITY_BALANCED</td>
+                  <td style="padding:8px;">~100 m</td>
+                  <td style="padding:8px;">Balance precisión/batería</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-subtle); background:var(--teal-glow);">
+                  <td style="padding:8px;"><code><strong>high</strong></code></td>
+                  <td style="padding:8px;">PRIORITY_HIGH_ACCURACY</td>
+                  <td style="padding:8px;"><strong>~3-10 m</strong></td>
+                  <td style="padding:8px;"><strong>✅ El que usamos para GIS</strong></td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);">
+                  <td style="padding:8px;"><code>best</code></td>
+                  <td style="padding:8px;">Máxima disponible</td>
+                  <td style="padding:8px;">~3 m</td>
+                  <td style="padding:8px;">Máxima precisión, más batería</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;"><code>bestForNavigation</code></td>
+                  <td style="padding:8px;">+ sensores extra</td>
+                  <td style="padding:8px;">~1-3 m</td>
+                  <td style="padding:8px;">Usa giroscopio, acelerómetro</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">¿Qué es el signo <code>?</code> y <code>!</code> en Dart?</div>
+          <p><code>LatLng?</code> (con signo de pregunta) significa que esta variable <strong>puede ser null</strong> — puede no tener valor todavía. Al iniciar la app, no tenemos posición GPS, así que empieza como <code>null</code>. Después de obtener el GPS, le asignamos un valor real.</p>
+          <p style="margin-top:8px;"><code>_posicionGPS!</code> (con signo de exclamación) le dice a Dart: "estoy seguro de que NO es null, úsalo". Solo usamos <code>!</code> después de verificar con <code>if (_posicionGPS != null)</code>.</p>
         </div>
 
         <div class="card">
           <div class="card-title">Marcador de "Mi ubicación" en el mapa</div>
-          <p>Un círculo azul semi-transparente con un punto central — igual que Google Maps:</p>
+          <p>Un círculo azul semi-transparente con un ícono central — el estándar visual de "estás aquí":</p>
           <div class="codeblock">
             <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
             <pre><span class="hl-cm">// Solo mostrar si tenemos posición GPS</span>
@@ -254,9 +384,9 @@
         width: <span class="hl-nm">30</span>, height: <span class="hl-nm">30</span>,
         child: <span class="hl-tp">Container</span>(
           decoration: <span class="hl-tp">BoxDecoration</span>(
-            color: <span class="hl-tp">Colors</span>.blue.<span class="hl-fn">withOpacity</span>(<span class="hl-nm">0.3</span>),
+            color: <span class="hl-tp">Colors</span>.blue.<span class="hl-fn">withValues</span>(alpha: <span class="hl-nm">0.3</span>),
             shape: <span class="hl-tp">BoxShape</span>.circle,
-            border: <span class="hl-tp">Border</span>.<span class="hl-fn">all</span>(color: <span class="hl-tp">Colors</span>.blue, width: <span class="hl-nm">2</span>),
+            border: <span class="hl-tp">Border</span>.<span class="hl-fn">all</span>(color: <span class="hl-tp">Colors</span>.blue, width: <span class="hl-nm">2.5</span>),
           ),
           child: <span class="hl-kw">const</span> <span class="hl-tp">Center</span>(
             child: <span class="hl-tp">Icon</span>(<span class="hl-tp">Icons</span>.my_location,
@@ -268,21 +398,40 @@
   ),</pre>
           </div>
         </div>
+
+        <div class="card">
+          <div class="card-title">getLastKnownPosition() — Dato rápido</div>
+          <p>Mientras el GPS busca satélites (puede tardar segundos), puedes obtener la última posición guardada en el dispositivo de forma instantánea:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Posición instantánea (puede ser de hace minutos u horas)</span>
+<span class="hl-tp">Position</span>? ultimaPos = <span class="hl-kw">await</span> <span class="hl-tp">Geolocator</span>.<span class="hl-fn">getLastKnownPosition</span>();
+<span class="hl-kw">if</span> (ultimaPos != <span class="hl-kw">null</span>) {
+  <span class="hl-cm">// Mostrar mientras esperamos el GPS real</span>
+  _posicionGPS = <span class="hl-tp">LatLng</span>(ultimaPos.latitude, ultimaPos.longitude);
+}</pre>
+          </div>
+          <div class="callout callout--tip">
+            <span class="callout-icon">💡</span>
+            <div><strong>Patrón profesional:</strong> Primero muestra <code>getLastKnownPosition()</code> para dar feedback inmediato, y luego actualiza con <code>getCurrentPosition()</code> cuando llegue la lectura real del GPS.</div>
+          </div>
+        </div>
       </div>
 
       <!-- Glosario -->
       <div class="sec">
         <h2 class="sec-heading">📖 Glosario — Clase 05</h2>
         <div class="glossary">
-          <div class="glossary-item"><span class="glossary-term">GPS</span><span class="glossary-def">Sistema de Posicionamiento Global. Usa satélites para calcular tu posición en la Tierra.</span></div>
-          <div class="glossary-item"><span class="glossary-term">geolocator</span><span class="glossary-def">Paquete de Flutter que da acceso al sensor GPS del teléfono.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Permission</span><span class="glossary-def">Autorización que el usuario otorga a la app para acceder a funciones del teléfono (GPS, cámara, etc.).</span></div>
-          <div class="glossary-item"><span class="glossary-term">FINE_LOCATION</span><span class="glossary-def">Permiso para GPS preciso (~3 metros). El que necesitamos para GIS.</span></div>
-          <div class="glossary-item"><span class="glossary-term">async / await</span><span class="glossary-def"><code>async</code> = esta función toma tiempo. <code>await</code> = espera a que termine. La app sigue funcionando mientras espera.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Future</span><span class="glossary-def">Un valor que todavía no existe pero existirá en el futuro. La posición GPS es un Future porque tarda en llegar.</span></div>
-          <div class="glossary-item"><span class="glossary-term">null</span><span class="glossary-def">"Sin valor". La posición GPS es null antes de que el GPS responda.</span></div>
-          <div class="glossary-item"><span class="glossary-term">LatLng?</span><span class="glossary-def">Variable que puede ser LatLng O null. El <code>?</code> indica que puede no tener valor.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Position</span><span class="glossary-def">Objeto que devuelve geolocator con latitud, longitud, altitud, velocidad y precisión.</span></div>
+          <div class="glossary-item"><span class="glossary-term">GPS</span><span class="glossary-def">Sistema de Posicionamiento Global. Usa señales de satélites para calcular tu posición en la Tierra por trilateración.</span></div>
+          <div class="glossary-item"><span class="glossary-term">geolocator</span><span class="glossary-def">Paquete de Flutter (v14.0.2) que da acceso multiplataforma al sensor GPS del teléfono.</span></div>
+          <div class="glossary-item"><span class="glossary-term">LocationPermission</span><span class="glossary-def">Enum con los estados del permiso: <code>denied</code>, <code>deniedForever</code>, <code>whileInUse</code>, <code>always</code>.</span></div>
+          <div class="glossary-item"><span class="glossary-term">LocationSettings</span><span class="glossary-def">Clase que configura la lectura GPS: precisión (<code>accuracy</code>), distancia mínima (<code>distanceFilter</code>). Se pasa a <code>getCurrentPosition()</code> y <code>getPositionStream()</code>.</span></div>
+          <div class="glossary-item"><span class="glossary-term">FINE_LOCATION</span><span class="glossary-def">Permiso para GPS preciso por satélites (~3-10 metros). El que necesitamos para GIS.</span></div>
+          <div class="glossary-item"><span class="glossary-term">compileSdkVersion</span><span class="glossary-def">Versión del SDK de Android contra la que se compila tu app. geolocator 14 requiere 35.</span></div>
+          <div class="glossary-item"><span class="glossary-term">async / await</span><span class="glossary-def"><code>async</code> = esta función toma tiempo. <code>await</code> = espera a que termine antes de continuar. La app sigue respondiendo mientras espera.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Future</span><span class="glossary-def">Un valor que todavía no existe pero existirá en el futuro. La posición GPS es un <code>Future&lt;Position&gt;</code> porque tarda en llegar.</span></div>
+          <div class="glossary-item"><span class="glossary-term">null / ?</span><span class="glossary-def">"Sin valor". <code>LatLng?</code> puede ser un LatLng o null. La posición GPS es null antes de que el GPS responda.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Position</span><span class="glossary-def">Objeto que devuelve geolocator con: <code>latitude</code>, <code>longitude</code>, <code>altitude</code>, <code>speed</code>, <code>heading</code>, <code>accuracy</code>, <code>timestamp</code>.</span></div>
         </div>
       </div>
 
@@ -291,28 +440,31 @@
         <span class="practice-chip">💻 Práctica 05</span>
         <div class="practice-title">Mi Ubicación en el Mapa</div>
         <ol class="practice-steps">
-          <li>Agrega el paquete <code>geolocator</code> y los dos permisos de ubicación en AndroidManifest.xml.</li>
-          <li>Implementa <code>_verificarPermisos()</code> completa con manejo de los 3 casos: GPS apagado, permiso denegado, denegado permanentemente. Muestra un SnackBar con mensaje claro en cada caso.</li>
-          <li>Agrega un <code>FloatingActionButton</code> con ícono de ubicación que obtenga tu posición GPS y centre el mapa ahí.</li>
-          <li>Muestra tu posición como marcador azul circular (como Google Maps).</li>
-          <li>Muestra tus coordenadas GPS exactas en la barra inferior.</li>
+          <li>Agrega <code>geolocator: ^14.0.2</code> en pubspec.yaml y ejecuta <code>flutter pub get</code>.</li>
+          <li>Verifica <code>compileSdkVersion 35</code> en <code>android/app/build.gradle</code>.</li>
+          <li>Agrega los permisos <code>ACCESS_FINE_LOCATION</code> y <code>ACCESS_COARSE_LOCATION</code> en AndroidManifest.xml.</li>
+          <li>Crea el archivo <code>lib/src/services/gps_service.dart</code> con <code>verificarPermisos()</code> que maneje los 3 casos: GPS apagado, permiso denegado, denegado permanentemente.</li>
+          <li>Agrega un <code>FloatingActionButton</code> con ícono de ubicación que obtenga tu posición GPS y centre el mapa usando <code>getCurrentPosition(locationSettings: ...)</code>.</li>
+          <li>Muestra tu posición como marcador azul circular sobre el mapa.</li>
+          <li>Muestra tus coordenadas GPS exactas en una barra inferior.</li>
         </ol>
         <div class="callout callout--warn">
           <span class="callout-icon">⚠️</span>
-          <div><strong>Recuerda:</strong> Después de modificar AndroidManifest.xml debes hacer full restart con <code>flutter run</code>. Hot Reload NO aplica cambios de AndroidManifest.</div>
+          <div><strong>Recuerda:</strong> Después de modificar AndroidManifest.xml o build.gradle necesitas full restart con <code>flutter run</code>. Usa <code>Ctrl+Shift+F5</code> en VS Code.</div>
         </div>
       </div>
 
       <div class="sec">
         <h2 class="sec-heading">✅ Checklist — Clase 05</h2>
         <ul class="checklist">
-          <li><span class="ck-box"></span> geolocator instalado y configurado</li>
+          <li><span class="ck-box"></span> geolocator: ^14.0.2 instalado</li>
+          <li><span class="ck-box"></span> compileSdkVersion 35 verificado</li>
           <li><span class="ck-box"></span> Permisos FINE y COARSE en AndroidManifest.xml</li>
           <li><span class="ck-box"></span> La app solicita permiso de ubicación al usuario</li>
           <li><span class="ck-box"></span> Botón "Mi ubicación" funciona y centra el mapa</li>
           <li><span class="ck-box"></span> Marcador azul visible en mi posición real</li>
           <li><span class="ck-box"></span> Coordenadas GPS en la barra inferior</li>
-          <li><span class="ck-box"></span> Manejo de errores: GPS apagado, permiso denegado</li>
+          <li><span class="ck-box"></span> Manejo de errores: GPS apagado, permiso denegado, denegado permanente</li>
         </ul>
       </div>
     </div>
@@ -324,7 +476,7 @@
 
       <div class="sec">
         <h2 class="sec-heading">🎯 Objetivo</h2>
-        <p class="sec-lead">Implementar seguimiento GPS en tiempo real, capturar puntos con coordenadas y calcular distancias entre ellos.</p>
+        <p class="sec-lead">Implementar seguimiento GPS en tiempo real, capturar puntos con coordenadas, calcular distancias y rumbos entre ellos.</p>
       </div>
 
       <!-- Stream -->
@@ -336,11 +488,10 @@
           <p>En la clase anterior, pedimos la posición <strong>una vez</strong> con <code>getCurrentPosition()</code>. Pero en campo necesitas que la posición se actualice <strong>automáticamente</strong> mientras caminas.</p>
 
           <p style="margin-top:10px;">Un <strong>Stream</strong> es un flujo continuo de datos. Piensa en la diferencia:</p>
-
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;">
             <div style="background:var(--bg-surface); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
               <strong style="color:var(--amber-500);">getCurrentPosition()</strong><br>
-              <span style="font-size:0.85rem;">Pides una foto → recibes UNA imagen.</span><br>
+              <span style="font-size:0.85rem;">Sacas UNA foto → recibes UNA imagen.</span><br>
               <span style="font-size:0.8rem; color:var(--text-muted);">Útil para: "¿dónde estoy ahora?"</span>
             </div>
             <div style="background:var(--teal-glow); padding:16px; border-radius:var(--radius-sm);">
@@ -351,41 +502,44 @@
           </div>
 
           <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart — API oficial geolocator 14</span><button class="codeblock-copy">Copiar</button></div>
             <pre><span class="hl-kw">import</span> <span class="hl-st">'dart:async'</span>;
+<span class="hl-kw">import</span> <span class="hl-st">'package:geolocator/geolocator.dart'</span>;
 
 <span class="hl-tp">StreamSubscription</span>&lt;<span class="hl-tp">Position</span>&gt;? _stream;
 <span class="hl-tp">bool</span> _siguiendo = <span class="hl-kw">false</span>;
 
 <span class="hl-kw">void</span> <span class="hl-fn">_iniciarSeguimiento</span>() <span class="hl-kw">async</span> {
-  <span class="hl-tp">bool</span> ok = <span class="hl-kw">await</span> <span class="hl-fn">_verificarPermisos</span>();
-  <span class="hl-kw">if</span> (!ok) <span class="hl-kw">return</span>;
+  <span class="hl-kw">final</span> error = <span class="hl-kw">await</span> <span class="hl-fn">verificarPermisos</span>();
+  <span class="hl-kw">if</span> (error != <span class="hl-kw">null</span>) <span class="hl-kw">return</span>;
 
-  <span class="hl-fn">setState</span>(() =&gt; _siguiendo = <span class="hl-kw">true</span>);
-
-  <span class="hl-kw">const</span> config = <span class="hl-tp">LocationSettings</span>(
+  <span class="hl-cm">// Configuración: precisión alta, actualizar cada 5 metros</span>
+  <span class="hl-kw">const</span> <span class="hl-tp">LocationSettings</span> locationSettings = <span class="hl-tp">LocationSettings</span>(
     accuracy: <span class="hl-tp">LocationAccuracy</span>.high,
-    distanceFilter: <span class="hl-nm">5</span>,  <span class="hl-cm">// Actualiza cada 5 metros</span>
+    distanceFilter: <span class="hl-nm">5</span>,  <span class="hl-cm">// metros mínimos de movimiento</span>
   );
 
   _stream = <span class="hl-tp">Geolocator</span>.<span class="hl-fn">getPositionStream</span>(
-    locationSettings: config,
+    locationSettings: locationSettings,
   ).<span class="hl-fn">listen</span>((<span class="hl-tp">Position</span> pos) {
     <span class="hl-fn">setState</span>(() {
       _posicionGPS = <span class="hl-tp">LatLng</span>(pos.latitude, pos.longitude);
     });
   });
+
+  <span class="hl-fn">setState</span>(() =&gt; _siguiendo = <span class="hl-kw">true</span>);
 }
 
 <span class="hl-kw">void</span> <span class="hl-fn">_detenerSeguimiento</span>() {
   _stream?.<span class="hl-fn">cancel</span>();    <span class="hl-cm">// Cerrar el flujo</span>
+  _stream = <span class="hl-kw">null</span>;
   <span class="hl-fn">setState</span>(() =&gt; _siguiendo = <span class="hl-kw">false</span>);
 }</pre>
           </div>
 
           <div class="callout callout--tip">
             <span class="callout-icon">💡</span>
-            <div><strong>distanceFilter: 5</strong> significa "solo dame una nueva posición cuando me haya movido al menos 5 metros". Sin esto, el GPS enviaría posiciones cada segundo aunque estés quieto, gastando batería.</div>
+            <div><strong>distanceFilter: 5</strong> significa "solo notifícame cuando me haya movido al menos 5 metros". Sin esto, el GPS enviaría posiciones cada segundo aunque estés quieto — gastando batería sin razón. Para logística usa 100, para campo 5-10.</div>
           </div>
 
           <div class="callout callout--danger">
@@ -396,62 +550,78 @@
 
         <div class="card">
           <div class="card-title">¿Qué es dispose()?</div>
-          <p><code>dispose()</code> es un método que Flutter llama automáticamente cuando un widget se destruye (por ejemplo, al cerrar la pantalla). Es el lugar correcto para limpiar recursos: cancelar streams, detener animaciones, liberar controladores.</p>
+          <p><code>dispose()</code> es un método que Flutter llama automáticamente cuando un widget se destruye (al cerrar la pantalla, al navegar a otra página). Es el lugar correcto para limpiar recursos: cancelar streams, detener animaciones, liberar controladores.</p>
           <div class="codeblock">
             <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre>@override
+            <pre><span class="hl-kw">@override</span>
 <span class="hl-kw">void</span> <span class="hl-fn">dispose</span>() {
-  _stream?.<span class="hl-fn">cancel</span>();  <span class="hl-cm">// Detener GPS</span>
+  _stream?.<span class="hl-fn">cancel</span>();        <span class="hl-cm">// Detener GPS</span>
+  _gpsService.<span class="hl-fn">dispose</span>();   <span class="hl-cm">// Si usas un servicio</span>
   <span class="hl-kw">super</span>.<span class="hl-fn">dispose</span>();
 }</pre>
           </div>
+          <div class="gis-analogy">Es como apagar el GPS cuando terminas el trabajo de campo. Si lo dejas encendido, se le acaba la batería sin motivo.</div>
         </div>
       </div>
 
       <!-- Capturar puntos -->
       <div class="sec">
         <h2 class="sec-heading">📌 Capturar Puntos GPS</h2>
-
         <div class="card">
-          <div class="card-title">Registrar la posición actual con timestamp</div>
-          <p>Capturar un punto significa tomar la posición GPS del momento y guardarla en una lista con fecha y hora. Es como marcar un waypoint en un GPS Garmin.</p>
+          <div class="card-title">Registrar waypoints con timestamp</div>
+          <p>Capturar un punto significa tomar la posición GPS del momento y guardarla en una lista con fecha y hora. Es exactamente como marcar un waypoint en un GPS Garmin.</p>
           <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-tp">List</span>&lt;<span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">dynamic</span>&gt;&gt; _puntos = [];
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart — Modelo de punto capturado</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">class</span> <span class="hl-tp">PuntoCapturado</span> {
+  <span class="hl-kw">final</span> <span class="hl-tp">int</span> id;
+  <span class="hl-kw">final</span> <span class="hl-tp">LatLng</span> posicion;
+  <span class="hl-kw">final</span> <span class="hl-tp">DateTime</span> fecha;
+  <span class="hl-tp">String</span> nota;
 
-<span class="hl-kw">void</span> <span class="hl-fn">_capturarPunto</span>() {
-  <span class="hl-kw">if</span> (_posicionGPS == <span class="hl-kw">null</span>) <span class="hl-kw">return</span>;
-
-  <span class="hl-kw">final</span> punto = {
-    <span class="hl-st">'lat'</span>:   _posicionGPS!.latitude,
-    <span class="hl-st">'lng'</span>:   _posicionGPS!.longitude,
-    <span class="hl-st">'fecha'</span>: <span class="hl-tp">DateTime</span>.<span class="hl-fn">now</span>().<span class="hl-fn">toIso8601String</span>(),
-    <span class="hl-st">'pos'</span>:   <span class="hl-tp">LatLng</span>(_posicionGPS!.latitude,
-                   _posicionGPS!.longitude),
-  };
-
-  <span class="hl-fn">setState</span>(() {
-    _puntos.<span class="hl-fn">add</span>(punto);
+  <span class="hl-tp">PuntoCapturado</span>({
+    <span class="hl-kw">required</span> <span class="hl-kw">this</span>.id,
+    <span class="hl-kw">required</span> <span class="hl-kw">this</span>.posicion,
+    <span class="hl-kw">required</span> <span class="hl-kw">this</span>.fecha,
+    <span class="hl-kw">this</span>.nota = <span class="hl-st">''</span>,
   });
 }</pre>
           </div>
+
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart — Capturar punto</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">List</span>&lt;<span class="hl-tp">PuntoCapturado</span>&gt; _puntosCapturados = [];
+
+<span class="hl-kw">void</span> <span class="hl-fn">_capturarPuntoGPS</span>() {
+  <span class="hl-kw">if</span> (_posicionGPS == <span class="hl-kw">null</span>) <span class="hl-kw">return</span>;
+
+  <span class="hl-kw">final</span> punto = <span class="hl-tp">PuntoCapturado</span>(
+    id: <span class="hl-tp">DateTime</span>.<span class="hl-fn">now</span>().millisecondsSinceEpoch,
+    posicion: _posicionGPS!,
+    fecha: <span class="hl-tp">DateTime</span>.<span class="hl-fn">now</span>(),
+  );
+
+  <span class="hl-fn">setState</span>(() {
+    _puntosCapturados.<span class="hl-fn">add</span>(punto);
+  });
+}</pre>
+          </div>
+          <div class="gis-analogy">En QGIS, cuando digitalizas un punto haces clic en el mapa y se agrega a la capa con sus atributos. Aquí el "clic" es presionar un botón, y los atributos son las coordenadas GPS + la fecha automática.</div>
         </div>
       </div>
 
       <!-- Distancias -->
       <div class="sec">
-        <h2 class="sec-heading">📐 Cálculo de Distancias</h2>
+        <h2 class="sec-heading">📐 Cálculo de Distancias y Rumbos</h2>
 
         <div class="card">
-          <div class="card-title">¿Cómo se calcula la distancia entre dos coordenadas?</div>
-          <p>La Tierra es una esfera, así que la distancia entre dos puntos no es una línea recta simple. Se usa la <strong>fórmula de Haversine</strong> que tiene en cuenta la curvatura de la Tierra. La buena noticia: geolocator ya incluye esta fórmula.</p>
-
+          <div class="card-title">distanceBetween() — Distancia entre dos puntos</div>
+          <p>La Tierra es una esfera, así que la distancia entre dos coordenadas no es una línea recta euclidiana. Geolocator usa la <strong>fórmula de Haversine</strong> que calcula la distancia sobre la superficie esférica.</p>
           <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart — API oficial</span><button class="codeblock-copy">Copiar</button></div>
             <pre><span class="hl-cm">// Distancia entre dos puntos (en metros)</span>
 <span class="hl-tp">double</span> metros = <span class="hl-tp">Geolocator</span>.<span class="hl-fn">distanceBetween</span>(
-  -<span class="hl-nm">16.4955</span>, -<span class="hl-nm">68.1336</span>,  <span class="hl-cm">// Punto A</span>
-  -<span class="hl-nm">16.4978</span>, -<span class="hl-nm">68.1369</span>,  <span class="hl-cm">// Punto B</span>
+  -<span class="hl-nm">16.4955</span>, -<span class="hl-nm">68.1336</span>,  <span class="hl-cm">// Plaza Murillo (lat, lon)</span>
+  -<span class="hl-nm">16.4978</span>, -<span class="hl-nm">68.1369</span>,  <span class="hl-cm">// Otro punto   (lat, lon)</span>
 );
 <span class="hl-fn">print</span>(metros); <span class="hl-cm">// ~420.3 metros</span>
 
@@ -461,7 +631,46 @@
   <span class="hl-kw">return</span> <span class="hl-st">'${(m / 1000).toStringAsFixed(2)} km'</span>;
 }</pre>
           </div>
-          <div class="gis-analogy">En QGIS usas la herramienta de medir distancia (clic, clic). Aquí la calculas por código con las mismas coordenadas. El resultado es idéntico.</div>
+          <div class="gis-analogy">En QGIS usas la herramienta de medir distancia (clic, clic). Aquí la calculas por código con las mismas coordenadas. El resultado es idéntico porque ambos usan Haversine.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">bearingBetween() — Rumbo / Azimut</div>
+          <p>Además de la distancia, geolocator puede calcular el <strong>bearing</strong> (rumbo o azimut) entre dos puntos — el ángulo respecto al norte geográfico:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart — API oficial</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">// Bearing entre dos puntos (en grados)</span>
+<span class="hl-tp">double</span> bearing = <span class="hl-tp">Geolocator</span>.<span class="hl-fn">bearingBetween</span>(
+  -<span class="hl-nm">16.4955</span>, -<span class="hl-nm">68.1336</span>,  <span class="hl-cm">// Punto A</span>
+  -<span class="hl-nm">16.4978</span>, -<span class="hl-nm">68.1369</span>,  <span class="hl-cm">// Punto B</span>
+);
+<span class="hl-cm">// bearing ≈ 228° (suroeste)</span>
+<span class="hl-cm">// 0°=Norte, 90°=Este, 180°=Sur, 270°=Oeste</span></pre>
+          </div>
+          <div class="callout callout--info">
+            <span class="callout-icon">🧭</span>
+            <div>El bearing es como la lectura de una brújula: te dice en qué dirección está el punto B desde el punto A. Muy útil para navegación en campo y orientación.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Distancia total de un recorrido</div>
+          <p>Para calcular la distancia total de un track (varios puntos), sumamos la distancia entre cada par consecutivo:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-cm">/// Distancia total de una lista de puntos (track)</span>
+<span class="hl-tp">double</span> <span class="hl-fn">distanciaTotal</span>(<span class="hl-tp">List</span>&lt;<span class="hl-tp">LatLng</span>&gt; puntos) {
+  <span class="hl-tp">double</span> total = <span class="hl-nm">0</span>;
+  <span class="hl-kw">for</span> (<span class="hl-tp">int</span> i = <span class="hl-nm">1</span>; i &lt; puntos.length; i++) {
+    total += <span class="hl-tp">Geolocator</span>.<span class="hl-fn">distanceBetween</span>(
+      puntos[i - <span class="hl-nm">1</span>].latitude, puntos[i - <span class="hl-nm">1</span>].longitude,
+      puntos[i].latitude, puntos[i].longitude,
+    );
+  }
+  <span class="hl-kw">return</span> total;
+}</pre>
+          </div>
+          <div class="gis-analogy">Es la distancia real del recorrido (como el cuentakilómetros de un auto), no la distancia en línea recta entre el primer y último punto.</div>
         </div>
       </div>
 
@@ -469,14 +678,17 @@
       <div class="sec">
         <h2 class="sec-heading">📖 Glosario — Clase 06</h2>
         <div class="glossary">
-          <div class="glossary-item"><span class="glossary-term">Stream</span><span class="glossary-def">Flujo continuo de datos que llegan a lo largo del tiempo. Como una manguera de agua abierta.</span></div>
-          <div class="glossary-item"><span class="glossary-term">listen()</span><span class="glossary-def">Método que conecta tu código al Stream. Cada vez que llega un dato nuevo, se ejecuta tu función.</span></div>
-          <div class="glossary-item"><span class="glossary-term">cancel()</span><span class="glossary-def">Cierra el Stream. Deja de recibir datos y libera el recurso (GPS, batería).</span></div>
-          <div class="glossary-item"><span class="glossary-term">dispose()</span><span class="glossary-def">Método de Flutter que se ejecuta cuando el widget se destruye. Lugar para limpiar recursos.</span></div>
-          <div class="glossary-item"><span class="glossary-term">distanceFilter</span><span class="glossary-def">Distancia mínima (en metros) que debes moverte para recibir una nueva posición del Stream.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Haversine</span><span class="glossary-def">Fórmula matemática para calcular distancias sobre una esfera. Tiene en cuenta la curvatura terrestre.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Waypoint</span><span class="glossary-def">Punto marcado intencionalmente con coordenadas GPS. Lo que hacemos al "capturar" un punto.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Timestamp</span><span class="glossary-def">Marca de fecha y hora exacta. Cada punto capturado incluye cuándo fue registrado.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Stream</span><span class="glossary-def">Flujo continuo de datos que llegan a lo largo del tiempo. Como una manguera de agua abierta: los datos siguen fluyendo hasta que la cierras.</span></div>
+          <div class="glossary-item"><span class="glossary-term">StreamSubscription</span><span class="glossary-def">Objeto que representa tu "conexión" al Stream. Lo necesitas para cancelar (<code>.cancel()</code>) el flujo cuando ya no lo usas.</span></div>
+          <div class="glossary-item"><span class="glossary-term">listen()</span><span class="glossary-def">Método que conecta tu código al Stream. Cada vez que llega un dato nuevo, se ejecuta tu función callback.</span></div>
+          <div class="glossary-item"><span class="glossary-term">cancel()</span><span class="glossary-def">Cierra la suscripción al Stream. Deja de recibir datos y libera el recurso (GPS, batería).</span></div>
+          <div class="glossary-item"><span class="glossary-term">dispose()</span><span class="glossary-def">Método del ciclo de vida de un StatefulWidget. Flutter lo llama cuando el widget se destruye. Lugar obligatorio para limpiar recursos.</span></div>
+          <div class="glossary-item"><span class="glossary-term">distanceFilter</span><span class="glossary-def">Distancia mínima (en metros) que debes moverte para que el Stream emita una nueva posición. Ahorra batería y reduce ruido GPS.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Haversine</span><span class="glossary-def">Fórmula matemática para calcular distancias sobre la superficie de una esfera. Tiene en cuenta la curvatura terrestre, a diferencia de la distancia euclidiana plana.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Bearing</span><span class="glossary-def">Ángulo en grados desde el norte geográfico hacia un punto destino. 0°=Norte, 90°=Este, 180°=Sur, 270°=Oeste. También llamado rumbo o azimut.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Waypoint</span><span class="glossary-def">Punto marcado intencionalmente con coordenadas GPS. Es lo que hacemos al "capturar" un punto en la app.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Track / Tracklog</span><span class="glossary-def">Secuencia de posiciones GPS registradas automáticamente a lo largo del tiempo. Representa el recorrido realizado.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Geofence</span><span class="glossary-def">Cerca virtual — un área circular definida por un centro y un radio. Se dispara una alerta cuando el usuario entra o sale del área.</span></div>
         </div>
       </div>
 
@@ -485,30 +697,33 @@
         <span class="practice-chip">💻 Práctica 06</span>
         <div class="practice-title">Captura GPS y Recorrido</div>
         <ol class="practice-steps">
-          <li>Implementa un botón toggle que inicie/detenga el seguimiento GPS en tiempo real.</li>
-          <li>Agrega un botón "Capturar Punto" que registre tu posición actual con fecha y hora.</li>
-          <li>Muestra los puntos capturados como marcadores verdes en el mapa.</li>
-          <li>Conecta los puntos con una polilínea verde (traza del recorrido).</li>
-          <li>Muestra la distancia total del recorrido en la barra inferior.</li>
+          <li>Implementa un botón toggle que inicie/detenga el seguimiento GPS en tiempo real usando <code>getPositionStream(locationSettings: ...)</code>.</li>
+          <li>Agrega un botón "Capturar Punto" que registre tu posición actual con fecha y hora en un modelo <code>PuntoCapturado</code>.</li>
+          <li>Muestra los puntos capturados como marcadores verdes numerados en el mapa.</li>
+          <li>Conecta los puntos con una polilínea verde (traza del recorrido) usando <code>PolylineLayer</code>.</li>
+          <li>Muestra la distancia total del recorrido en la barra inferior usando <code>distanceBetween()</code>.</li>
+          <li>Implementa un panel (BottomSheet) que liste los puntos con coordenadas, fecha y distancia al punto anterior.</li>
         </ol>
       </div>
 
       <div class="challenge">
         <span class="challenge-chip">🚀 Reto Extra — Geofence simple</span>
         <div class="card-title" style="color:var(--text-primary); margin-bottom:8px;">Zona de alerta</div>
-        <p style="font-size:0.9rem;">Define un punto central y un radio de 100 metros. Cuando tu GPS entre a esa zona (la distancia sea menor al radio), muestra un SnackBar "Has entrado a la zona de estudio".</p>
+        <p style="font-size:0.9rem;">Define un punto central y un radio de 100 metros. Dibuja un <code>CircleMarker</code> en el mapa. Cuando tu GPS entre a esa zona (distancia menor al radio), muestra un SnackBar "Has entrado a la zona de estudio". Usa <code>Geolocator.distanceBetween()</code> para verificar en cada actualización del GPS.</p>
       </div>
 
       <div class="sec">
         <h2 class="sec-heading">✅ Checklist — Clase 06</h2>
         <ul class="checklist">
-          <li><span class="ck-box"></span> Seguimiento GPS en tiempo real funciona</li>
+          <li><span class="ck-box"></span> Seguimiento GPS en tiempo real con getPositionStream</li>
           <li><span class="ck-box"></span> Botón toggle iniciar/detener seguimiento</li>
-          <li><span class="ck-box"></span> Captura de puntos GPS con timestamp</li>
-          <li><span class="ck-box"></span> Marcadores verdes de puntos capturados</li>
+          <li><span class="ck-box"></span> Modelo PuntoCapturado con coordenadas y timestamp</li>
+          <li><span class="ck-box"></span> Captura de puntos GPS funcional</li>
+          <li><span class="ck-box"></span> Marcadores verdes numerados en el mapa</li>
           <li><span class="ck-box"></span> Polilínea del recorrido visible</li>
-          <li><span class="ck-box"></span> Distancia total en barra inferior</li>
-          <li><span class="ck-box"></span> dispose() cancela el Stream</li>
+          <li><span class="ck-box"></span> Distancia total y distancias parciales calculadas</li>
+          <li><span class="ck-box"></span> Panel BottomSheet con lista de puntos</li>
+          <li><span class="ck-box"></span> dispose() cancela el Stream correctamente</li>
         </ul>
       </div>
     </div>
@@ -524,23 +739,23 @@
       </div>
 
       <div class="quiz">
-        <div class="quiz-heading">🧠 Cuestionario — 8 preguntas</div>
+        <div class="quiz-heading">🧠 Cuestionario — 10 preguntas</div>
 
-        <div class="quiz-q" data-qi="1" data-ans="d" data-explain="Las 3 condiciones son obligatorias: permiso en código, aceptación del usuario, y GPS encendido.">
+        <div class="quiz-q" data-qi="1" data-ans="d" data-explain="Las 3 condiciones son obligatorias: permiso declarado en AndroidManifest, aceptación del usuario en tiempo de ejecución, y GPS del teléfono encendido.">
           <p class="quiz-q-text"><span class="quiz-q-num">1.</span> ¿Cuántas condiciones necesitas para usar el GPS en una app Flutter?</p>
           <div class="quiz-opts">
             <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Solo instalar geolocator</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> 1 — declarar permisos</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> 1 — declarar permisos en AndroidManifest</div>
             <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> 2 — permisos y GPS encendido</div>
             <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> 3 — permiso en código, aceptación del usuario, GPS encendido</div>
           </div>
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="2" data-ans="a" data-explain="FINE_LOCATION usa satélites GPS con precisión de ~3 metros.">
+        <div class="quiz-q" data-qi="2" data-ans="a" data-explain="FINE_LOCATION usa satélites GPS con precisión de ~3-10 metros. COARSE usa WiFi/antenas con ~100m.">
           <p class="quiz-q-text"><span class="quiz-q-num">2.</span> ¿Cuál permiso da mayor precisión para trabajo GIS?</p>
           <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> ACCESS_FINE_LOCATION (~3 metros)</div>
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> ACCESS_FINE_LOCATION (~3-10 metros)</div>
             <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> ACCESS_COARSE_LOCATION (~100 metros)</div>
             <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> INTERNET</div>
             <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Ambos dan la misma precisión</div>
@@ -548,7 +763,7 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="3" data-ans="c" data-explain="Hot Reload solo actualiza código Dart. Cambios en AndroidManifest necesitan full restart.">
+        <div class="quiz-q" data-qi="3" data-ans="c" data-explain="Hot Reload solo actualiza código Dart. Cambios en archivos nativos (AndroidManifest, build.gradle) necesitan full restart.">
           <p class="quiz-q-text"><span class="quiz-q-num">3.</span> Después de agregar permisos en AndroidManifest.xml, ¿qué debes hacer?</p>
           <div class="quiz-opts">
             <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Hot Reload (Ctrl+S)</div>
@@ -559,41 +774,52 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="4" data-ans="b" data-explain="async marca una función que toma tiempo. await espera su resultado sin bloquear la app.">
-          <p class="quiz-q-text"><span class="quiz-q-num">4.</span> ¿Qué significan async y await?</p>
+        <div class="quiz-q" data-qi="4" data-ans="b" data-explain="En geolocator 14, getCurrentPosition recibe locationSettings: LocationSettings(...). El parámetro desiredAccuracy directo fue deprecado.">
+          <p class="quiz-q-text"><span class="quiz-q-num">4.</span> ¿Cuál es la forma correcta de pedir la posición GPS en geolocator 14?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Geolocator.getCurrentPosition(locationSettings: LocationSettings(accuracy: LocationAccuracy.high))</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Geolocator.getPosition(accuracy: 'high')</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Geolocator.getCurrentLocation()</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="5" data-ans="b" data-explain="async marca una función que toma tiempo. await espera su resultado sin bloquear la app — la interfaz sigue respondiendo.">
+          <p class="quiz-q-text"><span class="quiz-q-num">5.</span> ¿Qué significan async y await en Dart?</p>
           <div class="quiz-opts">
             <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Son tipos de variable como int y String</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> async = función que toma tiempo, await = espera el resultado</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> async = función que toma tiempo, await = espera el resultado sin bloquear</div>
             <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Son comandos de terminal</div>
             <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Sirven para crear widgets</div>
           </div>
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="5" data-ans="c" data-explain="Un Stream es un flujo continuo de datos — getCurrentPosition da UNA posición.">
-          <p class="quiz-q-text"><span class="quiz-q-num">5.</span> ¿Cuál es la diferencia entre getCurrentPosition() y getPositionStream()?</p>
+        <div class="quiz-q" data-qi="6" data-ans="c" data-explain="getCurrentPosition da UNA lectura (waypoint). getPositionStream da un flujo continuo (tracklog) que se actualiza automáticamente.">
+          <p class="quiz-q-text"><span class="quiz-q-num">6.</span> ¿Cuál es la diferencia entre getCurrentPosition() y getPositionStream()?</p>
           <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> No hay diferencia</div>
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> No hay diferencia real</div>
             <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> getPositionStream es más preciso</div>
             <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> getCurrentPosition da UNA posición, getPositionStream da posiciones continuamente</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> getCurrentPosition es más rápido</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> getCurrentPosition funciona sin permisos</div>
           </div>
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="6" data-ans="a" data-explain="distanceFilter define los metros mínimos de movimiento antes de enviar una nueva posición.">
-          <p class="quiz-q-text"><span class="quiz-q-num">6.</span> ¿Qué hace distanceFilter: 5 en LocationSettings?</p>
+        <div class="quiz-q" data-qi="7" data-ans="a" data-explain="distanceFilter define los metros mínimos de movimiento antes de emitir una nueva posición. Ahorra batería y reduce ruido.">
+          <p class="quiz-q-text"><span class="quiz-q-num">7.</span> ¿Qué hace distanceFilter: 5 en LocationSettings?</p>
           <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Solo envía nueva posición si te moviste al menos 5 metros</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Filtra puntos a más de 5 km</div>
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Solo emite nueva posición si te moviste al menos 5 metros</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Filtra puntos a más de 5 km de distancia</div>
             <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Limita a 5 satélites GPS</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Actualiza cada 5 segundos</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Actualiza la posición cada 5 segundos</div>
           </div>
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="7" data-ans="d" data-explain="dispose() es donde debes cancelar streams y liberar recursos para evitar memory leaks.">
-          <p class="quiz-q-text"><span class="quiz-q-num">7.</span> ¿Dónde debes cancelar el Stream de GPS?</p>
+        <div class="quiz-q" data-qi="8" data-ans="d" data-explain="dispose() es el lugar correcto para cancelar streams y liberar recursos. Si no cancelas el GPS ahí, sigue consumiendo batería.">
+          <p class="quiz-q-text"><span class="quiz-q-num">8.</span> ¿Dónde debes cancelar el Stream de GPS?</p>
           <div class="quiz-opts">
             <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> En build()</div>
             <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> En initState()</div>
@@ -603,13 +829,24 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="8" data-ans="b" data-explain="Geolocator.distanceBetween usa la fórmula de Haversine que considera la curvatura terrestre.">
-          <p class="quiz-q-text"><span class="quiz-q-num">8.</span> ¿Cómo calculas la distancia entre dos coordenadas GPS?</p>
+        <div class="quiz-q" data-qi="9" data-ans="b" data-explain="Geolocator.distanceBetween() usa la fórmula de Haversine que considera la curvatura de la Tierra para calcular distancias precisas.">
+          <p class="quiz-q-text"><span class="quiz-q-num">9.</span> ¿Cómo calculas la distancia entre dos coordenadas GPS en Flutter?</p>
           <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Restando latitudes y longitudes</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Con Geolocator.distanceBetween() que usa Haversine</div>
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Restando latitudes y longitudes directamente</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Con Geolocator.distanceBetween() que usa la fórmula de Haversine</div>
             <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> No se puede calcular por código</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Con MapController.distance()</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Con MapController.measureDistance()</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="10" data-ans="c" data-explain="geolocator 14 requiere compileSdkVersion 35 en android/app/build.gradle. Sin esto, la compilación falla.">
+          <p class="quiz-q-text"><span class="quiz-q-num">10.</span> ¿Qué valor de compileSdkVersion requiere geolocator 14 en Android?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> 30</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> 33</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> 35</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> No importa la versión</div>
           </div>
           <div class="quiz-fb"></div>
         </div>
@@ -621,11 +858,11 @@
 
     <div class="bottom-nav">
       <a href="../modulo-02/index.html" class="btn-nav btn-prev">← Módulo 2</a>
-      <a href="../modulo-04/index.html" class="btn-nav btn-next">Módulo 4 — GeoServer WMS →</a>
+      <a href="../modulo-04/index.html" class="btn-nav btn-next">Módulo 4 →</a>
     </div>
-
   </main>
 </div>
+
 <script src="../js/course.js"></script>
 </body>
 </html>
