@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Módulo 5 · Captura de Datos — ARTECLAB</title>
+  <title>Módulo 5 · Captura, Exportación & APK — ARTECLAB</title>
   <link rel="stylesheet" href="../css/course.css">
   <link rel="icon" href="../img/logo-arteclab.png" type="image/png">
 </head>
@@ -28,28 +28,30 @@
   <main class="container">
 
     <div class="mod-header">
-      <span class="mod-chip">Módulo 5 de 6</span>
-      <h1 class="mod-title">Captura de Datos<br>GPS & Visualización 📍🗂️</h1>
-      <p class="mod-desc">Formularios de campo, almacenamiento local, lista de registros y vista combinada mapa + datos. Tu app se convierte en herramienta profesional.</p>
+      <span class="mod-chip">Módulo 5 de 5 · Final</span>
+      <h1 class="mod-title">Captura de Datos,<br>Exportación & APK Final 📍📤🚀</h1>
+      <p class="mod-desc">Formularios de campo con almacenamiento persistente, lista de registros, exportación a GeoJSON compatible con QGIS, y generación del APK instalable. Cierras el ciclo completo de GeoCollect.</p>
       <div class="mod-stats">
-        <span class="mod-stat">📅 Clases 9 y 10</span>
+        <span class="mod-stat">📅 Clases 09 y 10</span>
         <span class="mod-stat">⏱️ 4 horas</span>
-        <span class="mod-stat">🎯 Intermedio</span>
+        <span class="mod-stat">🎯 Intermedio-Avanzado</span>
       </div>
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" data-target="t-clase09">Clase 09 — Formularios y Almacenamiento</button>
-      <button class="tab-btn" data-target="t-clase10">Clase 10 — Lista y Vista Combinada</button>
+      <button class="tab-btn active" data-target="t-clase09">Clase 09 — Formularios, Almacenamiento y Lista</button>
+      <button class="tab-btn" data-target="t-clase10">Clase 10 — GeoJSON, APK y Cierre</button>
       <button class="tab-btn" data-target="t-quiz5">📝 Cuestionario</button>
     </div>
 
-    <!-- ═══ CLASE 09 ═══ -->
+    <!-- ═══════════════════════════════════════════════════════
+         CLASE 09 — Formularios + Almacenamiento + Lista + Nav
+         ═══════════════════════════════════════════════════════ -->
     <div id="t-clase09" class="tab-panel active">
 
       <div class="sec">
         <h2 class="sec-heading">🎯 Objetivo</h2>
-        <p class="sec-lead">Crear un formulario profesional para capturar puntos de campo con atributos, validar los datos, y guardarlos de forma persistente en el teléfono.</p>
+        <p class="sec-lead">Crear un formulario profesional para capturar puntos de campo con atributos, validar y guardar los datos de forma persistente, mostrarlos en una lista editable, y combinar mapa + lista con navegación inferior. Es la clase más densa del curso — todo lo que sigue (exportación) depende de esta base de datos local.</p>
       </div>
 
       <div class="sec">
@@ -112,6 +114,11 @@
           <div class="callout callout--info">
             <span class="callout-icon">💡</span>
             <div><strong>¿Qué es un TextEditingController?</strong> Es un objeto que "controla" un campo de texto. Te permite leer lo que escribió el usuario (<code>_nombreCtrl.text</code>) y también escribir valores por código. Cada campo de texto necesita su propio controller.</div>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">🤖</span>
+            <div><strong>Tip con IA:</strong> escribir 4-5 <code>validator</code> casi idénticos (nombre, tipo, observación...) es repetitivo — buen caso para pedirle a la IA que genere las variantes una vez que tú ya escribiste y entiendes la primera. No le pidas que invente la <em>lógica</em> de validación del negocio (qué es obligatorio, qué rango es válido) — esa decisión es tuya.</div>
           </div>
         </div>
 
@@ -208,52 +215,6 @@
       </div>
 
       <div class="sec">
-        <h2 class="sec-heading">📖 Glosario — Clase 09</h2>
-        <div class="glossary">
-          <div class="glossary-item"><span class="glossary-term">Form</span><span class="glossary-def">Widget contenedor que agrupa campos de formulario y permite validarlos todos a la vez.</span></div>
-          <div class="glossary-item"><span class="glossary-term">GlobalKey</span><span class="glossary-def">"Control remoto" del formulario. Permite llamar validate() desde cualquier parte.</span></div>
-          <div class="glossary-item"><span class="glossary-term">validator</span><span class="glossary-def">Función que verifica si un campo es válido. Retorna null si OK, o un mensaje de error.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Controller</span><span class="glossary-def">Objeto que controla un campo de texto. Permite leer y escribir su valor.</span></div>
-          <div class="glossary-item"><span class="glossary-term">SharedPreferences</span><span class="glossary-def">Almacenamiento local del teléfono. Guarda datos como texto que persisten al cerrar la app.</span></div>
-          <div class="glossary-item"><span class="glossary-term">JSON</span><span class="glossary-def">Formato de texto para representar datos estructurados. Se usa para guardar y transmitir datos.</span></div>
-          <div class="glossary-item"><span class="glossary-term">encode/decode</span><span class="glossary-def">encode = convertir datos a texto JSON. decode = convertir texto JSON a datos de Dart.</span></div>
-          <div class="glossary-item"><span class="glossary-term">RadioListTile</span><span class="glossary-def">Widget de opción exclusiva. Solo se puede seleccionar una de un grupo.</span></div>
-        </div>
-      </div>
-
-      <div class="practice">
-        <span class="practice-chip">💻 Práctica 09</span>
-        <div class="practice-title">Formulario de Captura</div>
-        <ol class="practice-steps">
-          <li>Crea una pantalla <code>FormularioPunto</code> con campos: nombre (texto), tipo (dropdown con 5 opciones), estado (radio: bueno/regular/malo), observación (texto multilínea).</li>
-          <li>Implementa validación: nombre y tipo son obligatorios. Muestra mensajes de error rojos.</li>
-          <li>Al presionar "Guardar", crea un Map con todos los datos + coordenadas GPS + fecha, agrega a la lista y cierra el formulario.</li>
-          <li>Guarda la lista en SharedPreferences después de cada captura.</li>
-          <li>Al iniciar la app, carga los puntos guardados con <code>_cargarPuntos()</code> en <code>initState()</code>.</li>
-        </ol>
-      </div>
-
-      <div class="sec">
-        <h2 class="sec-heading">✅ Checklist — Clase 09</h2>
-        <ul class="checklist">
-          <li><span class="ck-box"></span> Formulario con TextFormField, Dropdown, Radio</li>
-          <li><span class="ck-box"></span> Validación funcional con mensajes de error</li>
-          <li><span class="ck-box"></span> Datos se guardan en SharedPreferences</li>
-          <li><span class="ck-box"></span> Datos persisten al cerrar y abrir la app</li>
-          <li><span class="ck-box"></span> Punto capturado aparece como marcador en el mapa</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- ═══ CLASE 10 ═══ -->
-    <div id="t-clase10" class="tab-panel">
-
-      <div class="sec">
-        <h2 class="sec-heading">🎯 Objetivo</h2>
-        <p class="sec-lead">Crear una lista de registros capturados, implementar eliminación, y combinar la vista de mapa con la lista de datos usando navegación de pestañas.</p>
-      </div>
-
-      <div class="sec">
         <h2 class="sec-heading">📋 Lista de Registros con ListView.builder</h2>
 
         <div class="card">
@@ -300,11 +261,11 @@
       </div>
 
       <div class="sec">
-        <h2 class="sec-heading">🧭 Navegación entre Pantallas</h2>
+        <h2 class="sec-heading">🧭 Navegación y Vista Combinada</h2>
 
         <div class="card">
           <div class="card-title">Navigator — El sistema de pantallas de Flutter</div>
-          <p>Tu app tiene varias pantallas: Mapa, Formulario, Lista. <strong>Navigator</strong> es el sistema que controla la navegación entre ellas. Funciona como un stack (pila) de cartas:</p>
+          <p>Tu app tiene varias pantallas: Mapa, Formulario, Lista. <strong>Navigator</strong> controla la navegación entre ellas, como una pila (stack) de cartas:</p>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;">
             <div style="background:var(--teal-glow); padding:14px; border-radius:var(--radius-sm); text-align:center;">
               <strong style="color:var(--teal-400);">push</strong><br>
@@ -326,14 +287,10 @@
 <span class="hl-tp">Navigator</span>.<span class="hl-fn">pop</span>(context);</pre>
           </div>
         </div>
-      </div>
-
-      <div class="sec">
-        <h2 class="sec-heading">📱 BottomNavigationBar — Mapa ↔ Lista</h2>
 
         <div class="card">
-          <div class="card-title">Barra inferior con pestañas</div>
-          <p>Como Google Maps tiene "Explorar" y "Guardados" abajo, tu app tendrá "Mapa" y "Datos". El usuario toca la pestaña y cambia de vista.</p>
+          <div class="card-title">BottomNavigationBar + IndexedStack — Mapa ↔ Lista</div>
+          <p>Como Google Maps tiene "Explorar" y "Guardados" abajo, tu app tendrá "Mapa" y "Datos".</p>
           <div class="codeblock">
             <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
             <pre><span class="hl-tp">int</span> _pantalla = <span class="hl-nm">0</span>;
@@ -366,59 +323,365 @@
         </div>
       </div>
 
+      <!-- Glosario combinado -->
       <div class="sec">
-        <h2 class="sec-heading">📖 Glosario — Clase 10</h2>
+        <h2 class="sec-heading">📖 Glosario — Clase 09</h2>
         <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">Form / GlobalKey</span><span class="glossary-def">Form agrupa campos; GlobalKey&lt;FormState&gt; permite validarlos todos a la vez.</span></div>
+          <div class="glossary-item"><span class="glossary-term">validator</span><span class="glossary-def">Función que verifica si un campo es válido. Retorna null si OK, o un mensaje de error.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Controller</span><span class="glossary-def">Objeto que controla un campo de texto. Permite leer y escribir su valor.</span></div>
+          <div class="glossary-item"><span class="glossary-term">SharedPreferences</span><span class="glossary-def">Almacenamiento local del teléfono. Guarda datos como texto que persisten al cerrar la app.</span></div>
+          <div class="glossary-item"><span class="glossary-term">encode/decode</span><span class="glossary-def">encode = convertir datos a texto JSON. decode = convertir texto JSON a datos de Dart.</span></div>
           <div class="glossary-item"><span class="glossary-term">ListView.builder</span><span class="glossary-def">Lista scrolleable que construye elementos bajo demanda. Eficiente para muchos registros.</span></div>
-          <div class="glossary-item"><span class="glossary-term">ListTile</span><span class="glossary-def">Widget de fila estándar con ícono, título, subtítulo y acción.</span></div>
           <div class="glossary-item"><span class="glossary-term">Dismissible</span><span class="glossary-def">Widget que permite eliminar un elemento deslizándolo hacia un lado.</span></div>
-          <div class="glossary-item"><span class="glossary-term">Navigator</span><span class="glossary-def">Sistema de Flutter para moverse entre pantallas. push = ir, pop = volver.</span></div>
-          <div class="glossary-item"><span class="glossary-term">MaterialPageRoute</span><span class="glossary-def">Define la transición animada al navegar a una nueva pantalla.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Navigator push/pop</span><span class="glossary-def">push = ir a una pantalla nueva. pop = volver a la anterior.</span></div>
           <div class="glossary-item"><span class="glossary-term">BottomNavigationBar</span><span class="glossary-def">Barra inferior con pestañas para cambiar entre vistas principales.</span></div>
-          <div class="glossary-item"><span class="glossary-term">IndexedStack</span><span class="glossary-def">Muestra un solo hijo a la vez pero mantiene el estado de todos.</span></div>
-          <div class="glossary-item"><span class="glossary-term">initState()</span><span class="glossary-def">Método que se ejecuta UNA vez al crear el widget. Ideal para cargar datos iniciales.</span></div>
+          <div class="glossary-item"><span class="glossary-term">IndexedStack</span><span class="glossary-def">Muestra un solo hijo a la vez pero mantiene el estado de todos (el mapa no se reinicia).</span></div>
+          <div class="glossary-item"><span class="glossary-term">initState()</span><span class="glossary-def">Método que se ejecuta UNA vez al crear el widget. Ideal para cargar datos guardados.</span></div>
         </div>
       </div>
 
+      <!-- Práctica combinada -->
       <div class="practice">
-        <span class="practice-chip">💻 Práctica 10</span>
-        <div class="practice-title">Lista y Vista Combinada</div>
+        <span class="practice-chip">💻 Práctica 09</span>
+        <div class="practice-title">Captura, Almacenamiento y Lista Completa</div>
         <ol class="practice-steps">
-          <li>Crea la vista de lista con <code>ListView.builder</code> mostrando nombre, tipo, estado y coordenadas.</li>
-          <li>Implementa <code>Dismissible</code> para eliminar registros deslizando. No olvides guardar después de eliminar.</li>
-          <li>Agrega un botón "Ver en mapa" que cambie a la pestaña del mapa y centre en ese punto.</li>
-          <li>Implementa <code>BottomNavigationBar</code> con pestañas Mapa y Datos.</li>
-          <li>Muestra el contador de puntos en la pestaña Datos (badge).</li>
+          <li>Crea una pantalla <code>FormularioPunto</code> con campos: nombre (texto), tipo (dropdown con 5 opciones), estado (radio: bueno/regular/malo), observación (texto multilínea). Valida nombre y tipo como obligatorios.</li>
+          <li>Al presionar "Guardar", crea un Map con todos los datos + coordenadas GPS + fecha, agrega a la lista, guarda en SharedPreferences y cierra el formulario.</li>
+          <li>Al iniciar la app, carga los puntos guardados con <code>_cargarPuntos()</code> en <code>initState()</code>.</li>
+          <li>Crea la vista de lista con <code>ListView.builder</code> mostrando nombre, tipo, estado y coordenadas. Implementa <code>Dismissible</code> para eliminar (recuerda guardar después).</li>
+          <li>Agrega un botón "Ver en mapa" en cada registro que cambie a la pestaña del mapa y centre en ese punto.</li>
+          <li>Implementa <code>BottomNavigationBar</code> con pestañas Mapa y Datos, usando <code>IndexedStack</code>. Muestra el contador de puntos como badge.</li>
         </ol>
       </div>
 
       <div class="challenge">
-        <span class="challenge-chip">🚀 Reto Extra — Búsqueda</span>
-        <div class="card-title" style="color:var(--text-primary); margin-bottom:8px;">Filtrar puntos por nombre</div>
-        <p style="font-size:0.9rem;">Agrega un TextField de búsqueda arriba de la lista que filtre los puntos por nombre o tipo en tiempo real mientras el usuario escribe.</p>
+        <span class="challenge-chip">🚀 Reto Extra — Opcional</span>
+        <div class="card-title" style="color:var(--text-primary); margin-bottom:8px;">Edición y búsqueda</div>
+        <p style="font-size:0.9rem;">1) Reutiliza <code>FormularioPunto</code> en modo edición: precarga los valores existentes y permite actualizar un punto en vez de crear uno nuevo. 2) Agrega un <code>TextField</code> de búsqueda arriba de la lista que filtre por nombre o tipo en tiempo real.</p>
       </div>
 
       <div class="sec">
-        <h2 class="sec-heading">✅ Checklist — Clase 10</h2>
+        <h2 class="sec-heading">✅ Checklist — Clase 09</h2>
         <ul class="checklist">
-          <li><span class="ck-box"></span> Lista de puntos con ListView.builder</li>
-          <li><span class="ck-box"></span> Eliminar deslizando (Dismissible)</li>
+          <li><span class="ck-box"></span> Formulario con TextFormField, Dropdown, Radio — validación funcional</li>
+          <li><span class="ck-box"></span> Datos se guardan y persisten en SharedPreferences</li>
+          <li><span class="ck-box"></span> Punto capturado aparece como marcador en el mapa</li>
+          <li><span class="ck-box"></span> Lista de puntos con ListView.builder + eliminar deslizando (Dismissible)</li>
           <li><span class="ck-box"></span> Botón "Ver en mapa" funcional</li>
-          <li><span class="ck-box"></span> BottomNavigationBar Mapa ↔ Lista</li>
-          <li><span class="ck-box"></span> Datos persisten entre sesiones</li>
+          <li><span class="ck-box"></span> BottomNavigationBar Mapa ↔ Datos con IndexedStack</li>
         </ul>
       </div>
-    </div>
 
-    <!-- ═══ CUESTIONARIO ═══ -->
+    </div><!-- /t-clase09 -->
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         CLASE 10 — GeoJSON + APK + Cierre del curso
+         ═══════════════════════════════════════════════════════ -->
+    <div id="t-clase10" class="tab-panel">
+
+      <div class="sec">
+        <h2 class="sec-heading">🎯 Objetivo</h2>
+        <p class="sec-lead">Convertir los puntos capturados a GeoJSON compatible con QGIS, generar el APK instalable de GeoCollect, y cerrar el curso con una recapitulación de todo lo construido.</p>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📄 ¿Qué es GeoJSON?</h2>
+
+        <div class="card">
+          <div class="card-title">El formato universal de datos geográficos</div>
+          <p>GeoJSON es un formato de texto para representar datos geográficos. Es el formato más universal de intercambio en GIS moderno: lo leen QGIS, ArcGIS, PostGIS, Google Maps, Leaflet y cualquier herramienta actual.</p>
+
+          <p style="margin-top:12px;">Un archivo GeoJSON es simplemente texto JSON organizado con una estructura específica:</p>
+
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">GeoJSON</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>{
+  <span class="hl-st">"type"</span>: <span class="hl-st">"FeatureCollection"</span>,
+  <span class="hl-st">"features"</span>: [
+    {
+      <span class="hl-st">"type"</span>: <span class="hl-st">"Feature"</span>,
+      <span class="hl-st">"geometry"</span>: {
+        <span class="hl-st">"type"</span>: <span class="hl-st">"Point"</span>,
+        <span class="hl-st">"coordinates"</span>: [<span class="hl-nm">-68.1336</span>, <span class="hl-nm">-16.4955</span>]
+      },
+      <span class="hl-st">"properties"</span>: {
+        <span class="hl-st">"nombre"</span>: <span class="hl-st">"Poste eléctrico #42"</span>,
+        <span class="hl-st">"tipo"</span>: <span class="hl-st">"Poste"</span>,
+        <span class="hl-st">"estado"</span>: <span class="hl-st">"Bueno"</span>
+      }
+    }
+  ]
+}</pre>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:16px 0;">
+            <div style="background:var(--teal-glow); padding:14px; border-radius:var(--radius-sm); text-align:center;">
+              <strong style="color:var(--teal-400); font-size:0.85rem;">FeatureCollection</strong><br>
+              <span style="font-size:0.8rem;">La colección completa = una capa en QGIS</span>
+            </div>
+            <div style="background:rgba(59,130,246,0.08); padding:14px; border-radius:var(--radius-sm); text-align:center;">
+              <strong style="color:var(--blue-500); font-size:0.85rem;">geometry</strong><br>
+              <span style="font-size:0.8rem;">DÓNDE está el punto (coordenadas)</span>
+            </div>
+            <div style="background:rgba(245,158,11,0.08); padding:14px; border-radius:var(--radius-sm); text-align:center;">
+              <strong style="color:var(--amber-500); font-size:0.85rem;">properties</strong><br>
+              <span style="font-size:0.8rem;">QUÉ es el punto (atributos)</span>
+            </div>
+          </div>
+
+          <div class="callout callout--danger">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>¡CUIDADO con el orden de coordenadas!</strong> En GeoJSON las coordenadas van <code>[longitud, latitud]</code> — al revés de como las usamos en Flutter (<code>LatLng(lat, lng)</code>). Si tus puntos aparecen en el océano, es por esto.</div>
+          </div>
+
+          <div class="gis-analogy">Un FeatureCollection de GeoJSON es exactamente como una capa vectorial de QGIS: una colección de geometrías, cada una con sus atributos en la tabla.</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">⚙️ Generar GeoJSON en Dart</h2>
+
+        <div class="card">
+          <div class="card-title">Función que convierte tus puntos a GeoJSON</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-tp">String</span> <span class="hl-fn">generarGeoJSON</span>(<span class="hl-tp">List</span>&lt;<span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">dynamic</span>&gt;&gt; puntos) {
+  <span class="hl-kw">final</span> features = puntos.<span class="hl-fn">map</span>((p) {
+    <span class="hl-kw">return</span> {
+      <span class="hl-st">'type'</span>: <span class="hl-st">'Feature'</span>,
+      <span class="hl-st">'geometry'</span>: {
+        <span class="hl-st">'type'</span>: <span class="hl-st">'Point'</span>,
+        <span class="hl-st">'coordinates'</span>: [
+          p[<span class="hl-st">'longitud'</span>],  <span class="hl-cm">// ← lng primero</span>
+          p[<span class="hl-st">'latitud'</span>],   <span class="hl-cm">// ← lat segundo</span>
+        ],
+      },
+      <span class="hl-st">'properties'</span>: {
+        <span class="hl-st">'nombre'</span>: p[<span class="hl-st">'nombre'</span>],
+        <span class="hl-st">'tipo'</span>: p[<span class="hl-st">'tipo'</span>],
+        <span class="hl-st">'estado'</span>: p[<span class="hl-st">'estado'</span>],
+        <span class="hl-st">'fecha'</span>: p[<span class="hl-st">'fecha'</span>],
+      },
+    };
+  }).<span class="hl-fn">toList</span>();
+
+  <span class="hl-kw">final</span> geojson = {
+    <span class="hl-st">'type'</span>: <span class="hl-st">'FeatureCollection'</span>,
+    <span class="hl-st">'features'</span>: features,
+  };
+
+  <span class="hl-kw">return</span> <span class="hl-kw">const</span> <span class="hl-tp">JsonEncoder</span>.<span class="hl-fn">withIndent</span>(<span class="hl-st">'  '</span>).<span class="hl-fn">convert</span>(geojson);
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📤 Guardar y Compartir</h2>
+
+        <div class="card">
+          <div class="card-title">Nuevas dependencias</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">yaml — pubspec.yaml</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>dependencies:
+  path_provider: ^2.1.0    # ← Acceso a carpetas del teléfono
+  share_plus: ^9.0.0       # ← Compartir archivos</pre>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">💡</span>
+            <div><strong>path_provider</strong> te da la ruta de las carpetas del teléfono (documentos, caché, etc.). <strong>share_plus</strong> abre el menú de compartir de Android (WhatsApp, email, Drive, etc.).</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Guardar archivo y compartir</div>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
+            <pre><span class="hl-kw">import</span> <span class="hl-st">'dart:io'</span>;
+<span class="hl-kw">import</span> <span class="hl-st">'package:path_provider/path_provider.dart'</span>;
+<span class="hl-kw">import</span> <span class="hl-st">'package:share_plus/share_plus.dart'</span>;
+
+<span class="hl-tp">Future</span>&lt;<span class="hl-kw">void</span>&gt; <span class="hl-fn">_exportar</span>() <span class="hl-kw">async</span> {
+  <span class="hl-cm">// 1. Generar el texto GeoJSON</span>
+  <span class="hl-kw">final</span> texto = <span class="hl-fn">generarGeoJSON</span>(_puntos);
+
+  <span class="hl-cm">// 2. Obtener carpeta de documentos</span>
+  <span class="hl-kw">final</span> dir = <span class="hl-kw">await</span> <span class="hl-fn">getApplicationDocumentsDirectory</span>();
+
+  <span class="hl-cm">// 3. Crear archivo con nombre único</span>
+  <span class="hl-kw">final</span> ts = <span class="hl-tp">DateTime</span>.<span class="hl-fn">now</span>().millisecondsSinceEpoch;
+  <span class="hl-kw">final</span> archivo = <span class="hl-tp">File</span>(<span class="hl-st">'${dir.path}/geocollect_$ts.geojson'</span>);
+  <span class="hl-kw">await</span> archivo.<span class="hl-fn">writeAsString</span>(texto);
+
+  <span class="hl-cm">// 4. Abrir menú de compartir</span>
+  <span class="hl-kw">await</span> <span class="hl-tp">Share</span>.<span class="hl-fn">shareXFiles</span>(
+    [<span class="hl-tp">XFile</span>(archivo.path)],
+    text: <span class="hl-st">'GeoCollect — ${_puntos.length} puntos'</span>,
+  );
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">📦 Configurar y Generar el APK</h2>
+
+        <div class="card">
+          <div class="card-title">Identidad de la app</div>
+          <p>En <code>android/app/src/main/AndroidManifest.xml</code>, cambia el nombre visible:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">XML</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>&lt;application
+    android:label=<span class="hl-st">"GeoCollect"</span>
+    ...&gt;</pre>
+          </div>
+          <p style="margin-top:12px;">En <code>android/app/build.gradle</code>, sección <code>defaultConfig</code>, define el identificador único y la versión:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Gradle</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>defaultConfig {
+    applicationId <span class="hl-st">"com.tuempresa.geocollect"</span>
+    minSdkVersion <span class="hl-nm">21</span>
+    targetSdkVersion <span class="hl-nm">34</span>
+    versionCode <span class="hl-nm">1</span>
+    versionName <span class="hl-st">"1.0.0"</span>
+}</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">¿Qué es un APK y cómo se genera?</div>
+          <p>APK = Android Package. Es el archivo que se instala en un teléfono Android — como un .exe en Windows. Al generarlo, Flutter compila tu código Dart a código nativo, incluye los recursos, y empaqueta todo en un solo archivo.</p>
+
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Terminal</span><button class="codeblock-copy">Copiar</button></div>
+            <pre>flutter build apk --release</pre>
+          </div>
+
+          <p style="margin-top:12px;">El APK se genera en:</p>
+          <div class="codeblock">
+            <div class="codeblock-bar"><span class="codeblock-lang">Ruta</span></div>
+            <pre>build/app/outputs/flutter-apk/app-release.apk</pre>
+          </div>
+
+          <div class="callout callout--tip">
+            <span class="callout-icon">💡</span>
+            <div>El build tarda 2-3 minutos. La versión <code>release</code> es más pequeña y rápida que la versión debug que usamos en desarrollo. Para publicar en Google Play necesitarías además firmar el APK con un <code>keystore</code> propio — para instalar directamente en teléfonos (lo que hace este curso) no es obligatorio.</div>
+          </div>
+
+          <p style="margin-top:12px;">Para instalar en otro teléfono Android:</p>
+          <div style="background:var(--bg-surface); padding:16px; border-radius:var(--radius-sm); margin:12px 0; border:1px solid var(--border-subtle); font-size:0.9rem; line-height:2;">
+            1. Envía el archivo APK por WhatsApp, Google Drive o cable USB<br>
+            2. En el teléfono receptor: Configuración → Seguridad → "Fuentes desconocidas" → Activar<br>
+            3. Abre el archivo APK y presiona "Instalar"<br>
+            4. ¡La app está lista para usar!
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">🎓 Lo que Construiste en 5 Semanas</h2>
+        <div class="card">
+          <div style="display:grid; gap:1px; background:var(--border-subtle); border-radius:var(--radius-md); overflow:hidden;">
+            <div style="display:grid; grid-template-columns:auto 1fr 1fr; gap:16px; padding:12px 16px; background:var(--bg-raised); font-size:0.85rem; font-weight:700; color:var(--teal-400);">
+              <span>Módulo</span><span>Lo que aprendiste</span><span>Lo que construiste</span>
+            </div>
+            <div style="display:grid; grid-template-columns:auto 1fr 1fr; gap:16px; padding:10px 16px; background:var(--bg-raised); font-size:0.85rem;">
+              <span>1</span><span>Widgets, setState, flutter_map</span><span>Mapa con marcadores</span>
+            </div>
+            <div style="display:grid; grid-template-columns:auto 1fr 1fr; gap:16px; padding:10px 16px; background:var(--bg-raised); font-size:0.85rem;">
+              <span>2</span><span>Capas, popups, geometrías, eventos</span><span>Selector de capas, polilíneas/polígonos</span>
+            </div>
+            <div style="display:grid; grid-template-columns:auto 1fr 1fr; gap:16px; padding:10px 16px; background:var(--bg-raised); font-size:0.85rem;">
+              <span>3</span><span>GPS, permisos, streams, distancias</span><span>Seguimiento GPS en tiempo real</span>
+            </div>
+            <div style="display:grid; grid-template-columns:auto 1fr 1fr; gap:16px; padding:10px 16px; background:var(--bg-raised); font-size:0.85rem;">
+              <span>4</span><span>WMS, CQL, GetFeatureInfo</span><span>Conexión con GeoServer real</span>
+            </div>
+            <div style="display:grid; grid-template-columns:auto 1fr 1fr; gap:16px; padding:10px 16px; background:var(--bg-raised); font-size:0.85rem;">
+              <span>5</span><span>Formularios, persistencia, GeoJSON, APK</span><span>GeoCollect completo, exportable e instalable</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">🚀 Hacia dónde llevar GeoCollect</h2>
+        <div class="card">
+          <div class="card-title">El curso termina, el proyecto no tiene por qué hacerlo</div>
+          <p>GeoCollect ya es una app de campo funcional de punta a punta. Algunas direcciones para seguir creciéndola por tu cuenta, usando IA como copiloto igual que en el curso:</p>
+          <ol class="practice-steps">
+            <li><strong>Modo offline real:</strong> cachear los tiles del mapa para zonas sin señal (paquetes como <code>flutter_map_tile_caching</code>).</li>
+            <li><strong>Sincronización:</strong> cuando vuelve el internet, subir automáticamente los puntos capturados a tu GeoServer vía WFS-T.</li>
+            <li><strong>Más formatos de exportación:</strong> además de GeoJSON, exportar a KML o CSV con coordenadas.</li>
+            <li><strong>Fotos por punto:</strong> adjuntar una foto de cámara a cada registro capturado (paquete <code>image_picker</code>).</li>
+            <li><strong>Pulir la identidad visual:</strong> ícono y splash screen propios, tema oscuro con Material 3.</li>
+          </ol>
+          <div class="callout callout--info">
+            <span class="callout-icon">🤖</span>
+            <div><strong>Recapitulando el hilo de IA del curso:</strong> la usaste para razonar sintaxis nueva (Módulo 1), generar variantes de diseño (popups, Módulo 2), depurar errores de Gradle/GPS (Módulo 3), verificar fórmulas con casos de prueba (Módulo 4) y acelerar código repetitivo de validación (este módulo). La misma disciplina — entender antes de pegar, verificar antes de confiar — te sirve para cualquier librería nueva que explores en estas ideas de expansión.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Glosario combinado -->
+      <div class="sec">
+        <h2 class="sec-heading">📖 Glosario — Clase 10</h2>
+        <div class="glossary">
+          <div class="glossary-item"><span class="glossary-term">GeoJSON</span><span class="glossary-def">Formato de texto estándar para datos geográficos. Lo leen QGIS, ArcGIS, y todas las herramientas GIS modernas.</span></div>
+          <div class="glossary-item"><span class="glossary-term">FeatureCollection / Feature</span><span class="glossary-def">FeatureCollection = capa. Feature = un elemento con geometry (dónde) y properties (atributos).</span></div>
+          <div class="glossary-item"><span class="glossary-term">[lng, lat]</span><span class="glossary-def">Orden de coordenadas en GeoJSON: longitud primero, latitud segundo. ¡Al revés de Flutter!</span></div>
+          <div class="glossary-item"><span class="glossary-term">path_provider / share_plus</span><span class="glossary-def">path_provider da acceso a carpetas del sistema; share_plus abre el menú nativo de compartir.</span></div>
+          <div class="glossary-item"><span class="glossary-term">APK</span><span class="glossary-def">Android Package. Archivo instalable de una app Android.</span></div>
+          <div class="glossary-item"><span class="glossary-term">release</span><span class="glossary-def">Versión optimizada de la app: más pequeña, más rápida, sin herramientas de debugging.</span></div>
+          <div class="glossary-item"><span class="glossary-term">applicationId</span><span class="glossary-def">Identificador único de tu app en Android. Formato: com.empresa.nombreapp</span></div>
+          <div class="glossary-item"><span class="glossary-term">versionCode / versionName</span><span class="glossary-def">versionCode = número interno (1, 2, 3...). versionName = nombre visible ("1.0.0").</span></div>
+          <div class="glossary-item"><span class="glossary-term">keystore</span><span class="glossary-def">Archivo de firma digital, necesario para publicar en Google Play (no para instalar directo).</span></div>
+        </div>
+      </div>
+
+      <!-- Práctica combinada -->
+      <div class="practice">
+        <span class="practice-chip">💻 Práctica 10 — Cierre del curso</span>
+        <div class="practice-title">Exportación y APK Final</div>
+        <ol class="practice-steps">
+          <li>Implementa <code>generarGeoJSON()</code>. Verifica que las coordenadas van en orden <code>[longitud, latitud]</code>.</li>
+          <li>Agrega un botón "Exportar" en el AppBar que genere el archivo y abra el menú de compartir.</li>
+          <li>Abre el archivo en <a href="https://geojson.io" target="_blank">geojson.io</a> (o en QGIS si lo tienes) y verifica que los puntos están en el lugar correcto, con sus atributos.</li>
+          <li>Configura el nombre de tu app y el <code>applicationId</code> en los archivos de Android.</li>
+          <li>Genera el APK con <code>flutter build apk --release</code> e instálalo en tu teléfono o en el de un compañero.</li>
+          <li>Haz el ciclo completo: captura 3 puntos → exporta GeoJSON → verifica en geojson.io o QGIS.</li>
+        </ol>
+      </div>
+
+      <div class="sec">
+        <h2 class="sec-heading">✅ Checklist Final</h2>
+        <ul class="checklist">
+          <li><span class="ck-box"></span> generarGeoJSON() implementada, coordenadas en orden [lng, lat]</li>
+          <li><span class="ck-box"></span> Archivo .geojson se genera, comparte y se verifica en geojson.io o QGIS</li>
+          <li><span class="ck-box"></span> Nombre y applicationId de la app configurados</li>
+          <li><span class="ck-box"></span> APK generado e instalado en un teléfono</li>
+          <li><span class="ck-box"></span> Ciclo completo: captura → exporta → QGIS</li>
+          <li><span class="ck-box"></span> 🎉 ¡Curso completado!</li>
+        </ul>
+      </div>
+
+    </div><!-- /t-clase10 -->
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         CUESTIONARIO — Módulo 5
+         ═══════════════════════════════════════════════════════ -->
     <div id="t-quiz5" class="tab-panel">
       <div class="sec">
-        <h2 class="sec-heading">📝 Autoevaluación — Módulo 5</h2>
-        <p class="sec-lead">Verifica tu comprensión de formularios, persistencia y navegación.</p>
+        <h2 class="sec-heading">📝 Autoevaluación Final — Módulo 5</h2>
+        <p class="sec-lead">Última autoevaluación del curso. Cubre formularios, persistencia, listas, GeoJSON y generación de APK.</p>
       </div>
 
       <div class="quiz">
-        <div class="quiz-heading">🧠 Cuestionario — 8 preguntas</div>
+        <div class="quiz-heading">🧠 Cuestionario Final — 8 preguntas</div>
 
         <div class="quiz-q" data-qi="1" data-ans="c" data-explain="GlobalKey<FormState> permite llamar validate() para verificar todos los campos del formulario.">
           <p class="quiz-q-text"><span class="quiz-q-num">1.</span> ¿Para qué sirve GlobalKey&lt;FormState&gt;?</p>
@@ -431,19 +694,8 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="2" data-ans="a" data-explain="Retorna null si el campo es válido, o un String con el mensaje de error.">
-          <p class="quiz-q-text"><span class="quiz-q-num">2.</span> ¿Qué retorna un validator cuando el campo es válido?</p>
-          <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> null</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> true</div>
-            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> "OK"</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> 0</div>
-          </div>
-          <div class="quiz-fb"></div>
-        </div>
-
-        <div class="quiz-q" data-qi="3" data-ans="b" data-explain="SharedPreferences guarda datos en el almacenamiento interno del teléfono.">
-          <p class="quiz-q-text"><span class="quiz-q-num">3.</span> ¿Dónde guarda datos SharedPreferences?</p>
+        <div class="quiz-q" data-qi="2" data-ans="b" data-explain="SharedPreferences guarda datos en el almacenamiento interno del teléfono, como texto JSON.">
+          <p class="quiz-q-text"><span class="quiz-q-num">2.</span> ¿Dónde guarda datos SharedPreferences?</p>
           <div class="quiz-opts">
             <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> En un servidor de internet</div>
             <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> En el almacenamiento interno del teléfono</div>
@@ -453,30 +705,8 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="4" data-ans="d" data-explain="json.encode convierte datos de Dart a texto JSON para guardarlos.">
-          <p class="quiz-q-text"><span class="quiz-q-num">4.</span> ¿Qué hace json.encode()?</p>
-          <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Cifra datos por seguridad</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Comprime archivos</div>
-            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Convierte texto JSON a datos de Dart</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Convierte datos de Dart a texto JSON</div>
-          </div>
-          <div class="quiz-fb"></div>
-        </div>
-
-        <div class="quiz-q" data-qi="5" data-ans="a" data-explain="Navigator.push pone una nueva pantalla encima. Navigator.pop la quita.">
-          <p class="quiz-q-text"><span class="quiz-q-num">5.</span> ¿Cómo navegas a una nueva pantalla?</p>
-          <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Navigator.push()</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Navigator.pop()</div>
-            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> setState()</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Navigator.move()</div>
-          </div>
-          <div class="quiz-fb"></div>
-        </div>
-
-        <div class="quiz-q" data-qi="6" data-ans="c" data-explain="Dismissible permite deslizar un elemento para eliminarlo.">
-          <p class="quiz-q-text"><span class="quiz-q-num">6.</span> ¿Cómo se elimina un elemento deslizando en Flutter?</p>
+        <div class="quiz-q" data-qi="3" data-ans="c" data-explain="Dismissible permite deslizar un elemento para eliminarlo, el patrón estándar de Android.">
+          <p class="quiz-q-text"><span class="quiz-q-num">3.</span> ¿Cómo se elimina un elemento deslizando en Flutter?</p>
           <div class="quiz-opts">
             <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Con onDelete</div>
             <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Con GestureDetector</div>
@@ -486,8 +716,8 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="7" data-ans="b" data-explain="IndexedStack mantiene el estado de todos los hijos aunque solo muestre uno.">
-          <p class="quiz-q-text"><span class="quiz-q-num">7.</span> ¿Por qué usamos IndexedStack en vez de cambiar widgets directamente?</p>
+        <div class="quiz-q" data-qi="4" data-ans="b" data-explain="IndexedStack mantiene el estado de todos los hijos aunque solo muestre uno — el mapa no se reinicia.">
+          <p class="quiz-q-text"><span class="quiz-q-num">4.</span> ¿Por qué usamos IndexedStack en vez de cambiar widgets directamente?</p>
           <div class="quiz-opts">
             <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Es más rápido</div>
             <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Mantiene el estado del mapa al cambiar a la lista</div>
@@ -497,13 +727,46 @@
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="8" data-ans="d" data-explain="initState() se ejecuta una sola vez al crear el widget. Ideal para cargar datos.">
-          <p class="quiz-q-text"><span class="quiz-q-num">8.</span> ¿Dónde llamas _cargarPuntos() para que se ejecute al abrir la app?</p>
+        <div class="quiz-q" data-qi="5" data-ans="c" data-explain="GeoJSON usa [longitud, latitud]. Flutter usa LatLng(latitud, longitud). ¡Orden invertido!">
+          <p class="quiz-q-text"><span class="quiz-q-num">5.</span> ¿En qué orden van las coordenadas en GeoJSON?</p>
           <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> En build()</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> En dispose()</div>
-            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> En setState()</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> En initState()</div>
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> [latitud, longitud]</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> [x, y, z]</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> [longitud, latitud]</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Da igual el orden</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="6" data-ans="d" data-explain="share_plus abre el menú nativo de compartir de Android.">
+          <p class="quiz-q-text"><span class="quiz-q-num">6.</span> ¿Qué paquete se usa para compartir archivos desde la app?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> path_provider</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> shared_preferences</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> geolocator</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> share_plus</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="7" data-ans="b" data-explain="flutter build apk --release genera el APK optimizado de producción.">
+          <p class="quiz-q-text"><span class="quiz-q-num">7.</span> ¿Qué comando genera el APK de producción?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> flutter run --release</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> flutter build apk --release</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> flutter export apk</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> dart compile apk</div>
+          </div>
+          <div class="quiz-fb"></div>
+        </div>
+
+        <div class="quiz-q" data-qi="8" data-ans="d" data-explain="Si pones [lat, lng] en vez de [lng, lat], los puntos aparecen en ubicaciones incorrectas (a veces en el océano).">
+          <p class="quiz-q-text"><span class="quiz-q-num">8.</span> Si tus puntos aparecen en el océano al abrir el GeoJSON en QGIS, ¿cuál es la causa más probable?</p>
+          <div class="quiz-opts">
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> QGIS está mal configurado</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> El archivo está corrupto</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Falta el campo type</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Las coordenadas están invertidas [lat, lng] en vez de [lng, lat]</div>
           </div>
           <div class="quiz-fb"></div>
         </div>
@@ -515,7 +778,7 @@
 
     <div class="bottom-nav">
       <a href="../modulo-04/index.html" class="btn-nav btn-prev">← Módulo 4</a>
-      <a href="../modulo-06/index.html" class="btn-nav btn-next">Módulo 6 — Exportación & APK →</a>
+      <a href="../index.html" class="btn-nav btn-next" style="background:linear-gradient(135deg, #22c55e, #059669);">🎉 Volver al Inicio — ¡Curso Completado!</a>
     </div>
 
   </main>

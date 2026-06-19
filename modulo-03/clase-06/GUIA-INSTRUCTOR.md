@@ -4,7 +4,7 @@
 
 **Duración:** 2 horas (120 minutos)
 **Fecha:** Miércoles 1 de abril de 2026
-**Módulo:** 3 de 6
+**Módulo:** 3 de 5
 
 ---
 

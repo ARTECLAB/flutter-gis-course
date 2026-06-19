@@ -28,7 +28,7 @@
 
     <!-- ═══ Header ═══ -->
     <div class="mod-header">
-      <span class="mod-chip">Módulo 1 de 6</span>
+      <span class="mod-chip">Módulo 1 de 5</span>
       <h1 class="mod-title">Flutter desde Cero<br>con Mentalidad GIS 📱</h1>
       <p class="mod-desc">Instala Flutter, aprende Dart y termina con un mapa interactivo real en tu teléfono Android.</p>
       <div class="mod-stats">
@@ -52,7 +52,7 @@
 
       <div class="sec">
         <h2 class="sec-heading">🎯 Objetivo</h2>
-        <p class="sec-lead">Crear tu primer proyecto Flutter, ejecutarlo en tu teléfono y aprender los fundamentos de Dart para construir apps de mapas.</p>
+        <p class="sec-lead">Crear tu primer proyecto Flutter, ejecutarlo en tu teléfono, dominar los widgets esenciales y terminar con un mapa interactivo real. Ya sabes programar — aquí aprendes los modismos de Dart/Flutter que de verdad importan para GIS, sin repasar lógica básica.</p>
       </div>
 
       <!-- Crear proyecto -->
@@ -103,156 +103,80 @@ code .</pre>
         <div class="gis-analogy">Imagina cambiar el estilo de una capa en QGIS y verlo reflejado al instante. Eso es Hot Reload.</div>
       </div>
 
-      <!-- ── DART ── -->
+      <!-- ── DART RÁPIDO ── -->
       <div class="sec">
-        <h2 class="sec-heading">📝 Fundamentos de Dart para GIS</h2>
-        <p class="sec-lead">Dart es el lenguaje de Flutter. Solo aprenderemos lo que necesitamos para la app de mapas.</p>
+        <h2 class="sec-heading">📝 Dart que sí necesitas (ya sabes programar)</h2>
+        <p class="sec-lead">No vamos a explicar qué es una variable o un <code>if</code> — eso ya lo sabes. Esta tarjeta cubre solo lo que es distinto o específico de Dart/Flutter para trabajar con datos geográficos. Todo lo demás (loops, condicionales, funciones) es la misma lógica que ya conoces, con sintaxis de Dart.</p>
 
-        <!-- Variables -->
         <div class="card">
-          <div class="card-title">📦 Variables — Guardar información geográfica</div>
-          <p>Las variables son contenedores con nombre. En GIS trabajas con coordenadas, nombres de capas, escalas — todo eso se guarda en variables.</p>
+          <div class="card-title">⚡ Lo específico de Dart para GIS</div>
 
           <div class="codeblock">
             <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-cm">// String — texto</span>
-<span class="hl-tp">String</span> nombreCapa = <span class="hl-st">'Ríos principales'</span>;
-<span class="hl-tp">String</span> proyeccion = <span class="hl-st">'EPSG:4326'</span>;
+            <pre><span class="hl-cm">// 1) Las coordenadas SIEMPRE son double, nunca int</span>
+<span class="hl-tp">double</span> latitud = -<span class="hl-nm">16.4955</span>;
+<span class="hl-tp">double</span> longitud = -<span class="hl-nm">68.1336</span>;
 
-<span class="hl-cm">// int — números enteros</span>
-<span class="hl-tp">int</span> zoom = <span class="hl-nm">15</span>;
-<span class="hl-tp">int</span> totalPuntos = <span class="hl-nm">42</span>;
+<span class="hl-cm">// 2) El patrón que vas a reutilizar TODO el curso:</span>
+<span class="hl-cm">// una "fila de atributos" = Map; una "tabla" = List de Maps</span>
+<span class="hl-tp">List</span>&lt;<span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">dynamic</span>&gt;&gt; puntos = [
+  {<span class="hl-st">'nombre'</span>: <span class="hl-st">'Plaza Murillo'</span>, <span class="hl-st">'lat'</span>: -<span class="hl-nm">16.4955</span>, <span class="hl-st">'lng'</span>: -<span class="hl-nm">68.1336</span>},
+  {<span class="hl-st">'nombre'</span>: <span class="hl-st">'San Francisco'</span>, <span class="hl-st">'lat'</span>: -<span class="hl-nm">16.4983</span>, <span class="hl-st">'lng'</span>: -<span class="hl-nm">68.1330</span>},
+];
 
-<span class="hl-cm">// double — números decimales (¡coordenadas!)</span>
-<span class="hl-tp">double</span> latitud = -<span class="hl-nm">16.5000</span>;
-<span class="hl-tp">double</span> longitud = -<span class="hl-nm">68.1500</span>;
+<span class="hl-cm">// 3) Interpolación — la vas a usar para armar URLs (WMS, tiles)</span>
+<span class="hl-tp">String</span> capa = <span class="hl-st">'municipios'</span>;
+<span class="hl-tp">String</span> url = <span class="hl-st">'https://miservidor.com/geoserver/wms?layers=$capa'</span>;
 
-<span class="hl-cm">// bool — verdadero o falso</span>
-<span class="hl-tp">bool</span> capaVisible = <span class="hl-kw">true</span>;
-<span class="hl-tp">bool</span> gpsActivo = <span class="hl-kw">false</span>;</pre>
+<span class="hl-cm">// 4) Null safety — Dart obliga a declarar si algo puede ser nulo</span>
+<span class="hl-tp">double</span>? gpsLat;          <span class="hl-cm">// puede no tener valor todavía (sin GPS aún)</span>
+<span class="hl-kw">if</span> (gpsLat != <span class="hl-kw">null</span>) {
+  <span class="hl-fn">print</span>(gpsLat!.toStringAsFixed(<span class="hl-nm">4</span>));  <span class="hl-cm">// el ! dice "sé que no es null"</span>
+}</pre>
           </div>
+
+          <div class="gis-analogy">El patrón <code>List&lt;Map&gt;</code> es literalmente tu tabla de atributos en memoria: cada <code>Map</code> es una fila, cada llave es una columna. Lo vas a ver una y otra vez hasta el módulo de exportación a GeoJSON.</div>
 
           <div class="callout callout--warn">
             <span class="callout-icon">⚠️</span>
-            <div><strong>Punto clave:</strong> Las coordenadas siempre son <code>double</code>, nunca <code>int</code>. La Paz está en -16.5, no en -16.</div>
-          </div>
-
-          <div class="gis-analogy">Las variables son como los campos de una tabla de atributos. El nombre del campo es el nombre de la variable, y el tipo (String, int, double) es como elegir "Texto", "Entero" o "Decimal" al crear un campo.</div>
-        </div>
-
-        <!-- var y final -->
-        <div class="card">
-          <div class="card-title">🔒 var vs final — ¿Puede cambiar o no?</div>
-          <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-cm">// var: puede cambiar después</span>
-<span class="hl-kw">var</span> zoomActual = <span class="hl-nm">10</span>;
-zoomActual = <span class="hl-nm">15</span>; <span class="hl-cm">// ✅ OK</span>
-
-<span class="hl-cm">// final: se asigna una vez y NO cambia</span>
-<span class="hl-kw">final</span> <span class="hl-tp">String</span> nombreApp = <span class="hl-st">'GeoCollect'</span>;
-<span class="hl-cm">// nombreApp = 'Otra'; // ❌ ERROR</span></pre>
-          </div>
-          <div class="callout callout--tip">
-            <span class="callout-icon">💡</span>
-            <div>Si cambia (zoom, posición, capa activa) → <code>var</code>. Si nunca cambia (nombre de app, URL del servidor) → <code>final</code>.</div>
+            <div><strong>Null safety</strong> no es un capricho de Dart — es justo lo que te va a salvar más adelante cuando el GPS todavía no tiene una posición (Módulo 3) y necesitas distinguir "sin dato" de "0.0".</div>
           </div>
         </div>
+      </div>
 
-        <!-- Listas -->
+      <!-- IA como copiloto -->
+      <div class="sec">
+        <h2 class="sec-heading">🤖 La IA como copiloto de código</h2>
+        <p class="sec-lead">Vas a usar asistentes de IA (Claude, Copilot, ChatGPT, etc.) durante todo el curso para escribir más rápido. La meta no es prohibirlo — es usarlo bien, sin que te genere código que no entiendes.</p>
+
         <div class="card">
-          <div class="card-title">📋 List — Colecciones de datos</div>
-          <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-tp">List</span>&lt;<span class="hl-tp">String</span>&gt; capas = [<span class="hl-st">'Ríos'</span>, <span class="hl-st">'Carreteras'</span>, <span class="hl-st">'Municipios'</span>];
-
-capas.<span class="hl-fn">add</span>(<span class="hl-st">'Lagos'</span>);              <span class="hl-cm">// Agregar</span>
-<span class="hl-tp">String</span> primera = capas[<span class="hl-nm">0</span>];       <span class="hl-cm">// Acceder (empieza en 0)</span>
-<span class="hl-tp">int</span> total = capas.length;         <span class="hl-cm">// Cuántos hay: 4</span>
-
-<span class="hl-cm">// Recorrer toda la lista</span>
-<span class="hl-kw">for</span> (<span class="hl-tp">String</span> capa <span class="hl-kw">in</span> capas) {
-  <span class="hl-fn">print</span>(<span class="hl-st">'Capa: $capa'</span>);
-}</pre>
+          <div class="card-title">Cómo lo vamos a usar en este curso</div>
+          <ol class="practice-steps">
+            <li><strong>Primero razona tú, luego pide ayuda.</strong> Para lógica nueva, intenta una primera versión propia antes de pedirle código a la IA — si no, no aprendes a pensar en widgets/Flutter, solo a copiar.</li>
+            <li><strong>Pide explicaciones, no solo código.</strong> "Explícame por qué este widget necesita <code>Expanded</code>" enseña más que "dame el código del mapa".</li>
+            <li><strong>Verifica siempre 3 cosas</strong> en cualquier código que te dé una IA para Flutter: que la versión del paquete que usa existe de verdad en pub.dev, que los parámetros del widget existen (las IAs a veces "inventan" parámetros que ya no existen o nunca existieron), y que entiendes cada línea antes de pegarla.</li>
+            <li><strong>Úsala para depurar errores</strong> — pegar el mensaje de error completo de <code>flutter run</code> a una IA suele ser más rápido que buscarlo en Google.</li>
+          </ol>
+          <div class="callout callout--info">
+            <span class="callout-icon">🤖</span>
+            <div><strong>Regla de oro del curso:</strong> si no puedes explicar en una frase qué hace una línea de código, no la pegues en tu proyecto — pídele a la IA que te la explique primero.</div>
           </div>
-          <div class="gis-analogy">Una List es como una columna de tu tabla de atributos — una colección ordenada de valores.</div>
         </div>
+      </div>
 
-        <!-- Maps -->
-        <div class="card">
-          <div class="card-title">🗃️ Map — Atributos de un punto geográfico</div>
-          <p>Un <code>Map</code> es como <strong>una fila</strong> de la tabla de atributos de QGIS.</p>
-          <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-tp">Map</span>&lt;<span class="hl-tp">String</span>, <span class="hl-tp">dynamic</span>&gt; punto = {
-  <span class="hl-st">'nombre'</span>:   <span class="hl-st">'Plaza Murillo'</span>,
-  <span class="hl-st">'latitud'</span>:  -<span class="hl-nm">16.4955</span>,
-  <span class="hl-st">'longitud'</span>: -<span class="hl-nm">68.1336</span>,
-  <span class="hl-st">'tipo'</span>:     <span class="hl-st">'punto_interes'</span>,
-  <span class="hl-st">'activo'</span>:   <span class="hl-kw">true</span>,
-};
-
-<span class="hl-tp">String</span> nombre = punto[<span class="hl-st">'nombre'</span>];  <span class="hl-cm">// 'Plaza Murillo'</span>
-punto[<span class="hl-st">'fecha'</span>] = <span class="hl-st">'2026-03-16'</span>;   <span class="hl-cm">// Agregar campo</span></pre>
-          </div>
-          <div class="gis-analogy">Las claves son los nombres de columna y los valores son los datos de esa fila.</div>
-        </div>
-
-        <!-- Funciones -->
-        <div class="card">
-          <div class="card-title">⚙️ Funciones — Operaciones reutilizables</div>
-          <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-cm">// Sin retorno — solo ejecuta algo</span>
-<span class="hl-kw">void</span> <span class="hl-fn">mostrarCoordenada</span>(<span class="hl-tp">double</span> lat, <span class="hl-tp">double</span> lng) {
-  <span class="hl-fn">print</span>(<span class="hl-st">'Coordenada: $lat, $lng'</span>);
-}
-
-<span class="hl-cm">// Con retorno — devuelve un resultado</span>
-<span class="hl-tp">String</span> <span class="hl-fn">formatear</span>(<span class="hl-tp">double</span> lat, <span class="hl-tp">double</span> lng) {
-  <span class="hl-kw">return</span> <span class="hl-st">'($lat, $lng)'</span>;
-}
-
-<span class="hl-cm">// Parámetro opcional con valor por defecto</span>
-<span class="hl-kw">void</span> <span class="hl-fn">centrarMapa</span>(<span class="hl-tp">double</span> lat, <span class="hl-tp">double</span> lng, {<span class="hl-tp">int</span> zoom = <span class="hl-nm">13</span>}) {
-  <span class="hl-fn">print</span>(<span class="hl-st">'Centrando con zoom $zoom'</span>);
-}
-
-<span class="hl-fn">centrarMapa</span>(-<span class="hl-nm">16.50</span>, -<span class="hl-nm">68.15</span>);            <span class="hl-cm">// zoom = 13</span>
-<span class="hl-fn">centrarMapa</span>(-<span class="hl-nm">16.50</span>, -<span class="hl-nm">68.15</span>, zoom: <span class="hl-nm">18</span>);  <span class="hl-cm">// zoom = 18</span></pre>
-          </div>
-          <div class="gis-analogy">Una función es como una herramienta de geoprocesamiento. Buffer recibe una geometría y distancia, y devuelve el resultado.</div>
-        </div>
-
-        <!-- Condicionales -->
-        <div class="card">
-          <div class="card-title">🔀 Condicionales — Tomar decisiones</div>
-          <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-tp">int</span> zoom = <span class="hl-nm">15</span>;
-
-<span class="hl-kw">if</span> (zoom > <span class="hl-nm">14</span>) {
-  <span class="hl-fn">print</span>(<span class="hl-st">'Vista detallada — nombres de calles'</span>);
-} <span class="hl-kw">else if</span> (zoom > <span class="hl-nm">10</span>) {
-  <span class="hl-fn">print</span>(<span class="hl-st">'Vista intermedia — carreteras principales'</span>);
-} <span class="hl-kw">else</span> {
-  <span class="hl-fn">print</span>(<span class="hl-st">'Vista general — límites departamentales'</span>);
-}</pre>
-          </div>
-          <div class="gis-analogy">En QGIS ya haces esto cuando defines reglas de simbología por escala. Misma lógica, diferente sintaxis.</div>
-        </div>
-
-        <!-- Interpolación -->
-        <div class="card">
-          <div class="card-title">🔗 Interpolación de Strings — Texto dinámico</div>
-          <div class="codeblock">
-            <div class="codeblock-bar"><span class="codeblock-lang">Dart</span><button class="codeblock-copy">Copiar</button></div>
-            <pre><span class="hl-tp">String</span> servidor = <span class="hl-st">'https://miservidor.com/geoserver'</span>;
-<span class="hl-tp">String</span> capa = <span class="hl-st">'municipios'</span>;
-
-<span class="hl-tp">String</span> url = <span class="hl-st">'$servidor/wms?service=WMS&amp;layers=$capa'</span>;
-<span class="hl-cm">// https://miservidor.com/geoserver/wms?service=WMS&amp;layers=municipios</span></pre>
-          </div>
+      <!-- Práctica 01 -->
+      <div class="practice">
+        <span class="practice-chip">💻 Calentamiento (10 min)</span>
+        <div class="practice-title">List&lt;Map&gt; de puntos GIS</div>
+        <p>Antes de entrar a widgets, fija el patrón que vas a reutilizar todo el curso.</p>
+        <ol class="practice-steps">
+          <li>Crea una <code>List&lt;Map&lt;String, dynamic&gt;&gt;</code> con 3 puntos de interés reales de tu ciudad (nombre, lat, lng, tipo).</li>
+          <li>Escribe una función <code>mostrarPunto()</code> que imprima cada punto de forma legible.</li>
+          <li>Si te atoras en sintaxis (no en lógica), pídele a una IA que te muestre el equivalente de un <code>for</code> o un <code>Map</code> en el lenguaje que ya conocías — luego escríbelo tú.</li>
+        </ol>
+        <div class="codeblock">
+          <div class="codeblock-bar"><span class="codeblock-lang">Terminal</span><button class="codeblock-copy">Copiar</button></div>
+          <pre>dart run lib/calentamiento.dart</pre>
         </div>
       </div>
 
@@ -260,38 +184,11 @@ punto[<span class="hl-st">'fecha'</span>] = <span class="hl-st">'2026-03-16'</sp
       <div class="sec">
         <h2 class="sec-heading">📖 Glosario — Clase 01</h2>
         <div class="glossary">
-          <div class="glossary-item"><span class="glossary-term">Variable</span><span class="glossary-def">Contenedor con nombre que guarda un dato (coordenada, texto, número).</span></div>
-          <div class="glossary-item"><span class="glossary-term">String</span><span class="glossary-def">Tipo de dato para texto. Va entre comillas: <code>'Hola'</code></span></div>
-          <div class="glossary-item"><span class="glossary-term">int</span><span class="glossary-def">Tipo de dato para números enteros: <code>15</code>, <code>42</code>, <code>-3</code></span></div>
-          <div class="glossary-item"><span class="glossary-term">double</span><span class="glossary-def">Tipo de dato para decimales: <code>-16.5000</code>, <code>3.14</code></span></div>
-          <div class="glossary-item"><span class="glossary-term">bool</span><span class="glossary-def">Verdadero o falso: <code>true</code>, <code>false</code></span></div>
-          <div class="glossary-item"><span class="glossary-term">List</span><span class="glossary-def">Colección ordenada de datos del mismo tipo (como una columna de Excel).</span></div>
-          <div class="glossary-item"><span class="glossary-term">Map</span><span class="glossary-def">Pares clave-valor (como una fila de la tabla de atributos de QGIS).</span></div>
-          <div class="glossary-item"><span class="glossary-term">Función</span><span class="glossary-def">Bloque de código reutilizable que recibe datos y produce un resultado.</span></div>
+          <div class="glossary-item"><span class="glossary-term">double</span><span class="glossary-def">Tipo de dato para decimales: <code>-16.5000</code>, <code>3.14</code>. Úsalo siempre para coordenadas.</span></div>
+          <div class="glossary-item"><span class="glossary-term">List&lt;Map&gt;</span><span class="glossary-def">El patrón "tabla de atributos en memoria": cada Map es una fila, cada llave una columna.</span></div>
+          <div class="glossary-item"><span class="glossary-term">Null safety</span><span class="glossary-def"><code>?</code> marca que un valor puede ser nulo; <code>!</code> afirma que en ese punto no lo es.</span></div>
           <div class="glossary-item"><span class="glossary-term">SDK</span><span class="glossary-def">Kit de herramientas para desarrollar software (Flutter SDK = herramientas para apps).</span></div>
           <div class="glossary-item"><span class="glossary-term">Hot Reload</span><span class="glossary-def">Actualización instantánea de la app al guardar cambios en el código.</span></div>
-        </div>
-      </div>
-
-      <!-- Práctica 01 -->
-      <div class="practice">
-        <span class="practice-chip">💻 Práctica 01</span>
-        <div class="practice-title">Simulador de Datos GIS en Dart</div>
-        <p>Crea un programa Dart que simule el registro de puntos geográficos capturados en campo.</p>
-        <ol class="practice-steps">
-          <li>Declara variables para <strong>3 puntos de interés</strong> de tu ciudad: nombre, latitud, longitud, tipo y estado activo.</li>
-          <li>Guarda los 3 puntos en una <code>List&lt;Map&lt;String, dynamic&gt;&gt;</code></li>
-          <li>Crea una función <code>mostrarPunto()</code> que imprima la info de forma legible.</li>
-          <li>Recorre la lista y muestra todos los puntos usando tu función.</li>
-          <li>Crea una función <code>contarPorTipo()</code> que cuente cuántos puntos hay de un tipo dado.</li>
-        </ol>
-        <div class="codeblock">
-          <div class="codeblock-bar"><span class="codeblock-lang">Terminal</span><button class="codeblock-copy">Copiar</button></div>
-          <pre>dart run lib/practica_01.dart</pre>
-        </div>
-        <div class="callout callout--danger">
-          <span class="callout-icon">⚠️</span>
-          <div><strong>Escríbelo tú mismo.</strong> No copies y pegues código. Los errores que cometas ahora son los que te enseñarán. En este módulo NO usamos IA.</div>
         </div>
       </div>
 
@@ -303,10 +200,9 @@ punto[<span class="hl-st">'fecha'</span>] = <span class="hl-st">'2026-03-16'</sp
           <li><span class="ck-box"></span> Proyecto <code>geo_collect</code> creado con <code>flutter create</code></li>
           <li><span class="ck-box"></span> App ejecutándose en mi teléfono Android</li>
           <li><span class="ck-box"></span> Hot Reload funcionando</li>
-          <li><span class="ck-box"></span> Entiendo variables: String, int, double, bool</li>
-          <li><span class="ck-box"></span> Entiendo List y Map para datos geográficos</li>
-          <li><span class="ck-box"></span> Puedo crear funciones con parámetros</li>
-          <li><span class="ck-box"></span> Práctica 01 completada y ejecutada</li>
+          <li><span class="ck-box"></span> Entiendo por qué las coordenadas son <code>double</code> y qué es null safety (<code>?</code>/<code>!</code>)</li>
+          <li><span class="ck-box"></span> Calentamiento con List&lt;Map&gt; completado</li>
+          <li><span class="ck-box"></span> Entiendo las 4 reglas de uso de IA del curso</li>
         </ul>
       </div>
 
@@ -621,13 +517,13 @@ Barra de herramientas   →     AppBar + FloatingActionButton</pre>
           <div class="quiz-fb"></div>
         </div>
 
-        <div class="quiz-q" data-qi="3" data-ans="b" data-explain="final se asigna una vez y no cambia — ideal para la URL del servidor.">
-          <p class="quiz-q-text"><span class="quiz-q-num">3.</span> Si la URL de tu GeoServer nunca cambia, ¿cómo la declaras?</p>
+        <div class="quiz-q" data-qi="3" data-ans="b" data-explain="double? significa que la variable puede ser null hasta que el GPS entregue un valor real.">
+          <p class="quiz-q-text"><span class="quiz-q-num">3.</span> Tienes <code>double? gpsLat;</code> antes de que el GPS responda. ¿Qué representa el <code>?</code>?</p>
           <div class="quiz-opts">
-            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> var url = 'https://...';</div>
-            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> final String url = 'https://...';</div>
-            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> bool url = 'https://...';</div>
-            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> int url = 'https://...';</div>
+            <div class="quiz-opt" data-val="a"><span class="quiz-dot"></span> Que el valor es opcional de mostrar en pantalla</div>
+            <div class="quiz-opt" data-val="b"><span class="quiz-dot"></span> Que la variable puede ser null mientras no hay posición GPS</div>
+            <div class="quiz-opt" data-val="c"><span class="quiz-dot"></span> Que el valor se redondea</div>
+            <div class="quiz-opt" data-val="d"><span class="quiz-dot"></span> Que es una pregunta para el usuario</div>
           </div>
           <div class="quiz-fb"></div>
         </div>

@@ -3,7 +3,7 @@
 ## Filtros CQL, GetFeatureInfo y Leyenda
 
 **Duración:** 2 horas (120 minutos)
-**Módulo:** 4 de 6
+**Módulo:** 4 de 5
 
 ---
 

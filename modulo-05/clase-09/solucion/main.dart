@@ -1,33 +1,25 @@
 // =============================================================
-// ✅ SOLUCIÓN FINAL — GeoCollect v1.0
+// ✅ SOLUCIÓN — Clase 09: GeoCollect con Formularios, Lista y Persistencia
 // =============================================================
+// Módulo 5 · Clase 09 — Estado del proyecto tras formularios + lista
 // Curso Flutter GIS — Daniel Quisbert
-// Estado del proyecto al finalizar el curso completo (Módulo 6)
 //
 // DEPENDENCIAS en pubspec.yaml:
 //   flutter_map: ^7.0.2
 //   latlong2: ^0.9.1
+//   flutter_map_marker_popup: ^7.0.0
 //   geolocator: ^12.0.0
+//   http: ^1.2.0
 //   shared_preferences: ^2.2.0
-//   path_provider: ^2.1.0
-//   share_plus: ^9.0.0
-//
-// PERMISOS en AndroidManifest.xml:
-//   <uses-permission android:name="android.permission.INTERNET"/>
-//   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-//   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 // =============================================================
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 void main() {
   runApp(const GeoCollectApp());
@@ -47,20 +39,7 @@ class GeoCollectApp extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════
-// TILE PROVIDERS
-// ═══════════════════════════════════════════════════════════
-
-class TileProviders {
-  static const String osm =
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  static const String satelite =
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-  static const String oscuro =
-      'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png';
-}
-
-// ═══════════════════════════════════════════════════════════
-// HOME SCREEN — BottomNavigationBar: Mapa ↔ Lista
+// HOME — BottomNavigationBar: Mapa ↔ Lista
 // ═══════════════════════════════════════════════════════════
 
 class HomeScreen extends StatefulWidget {
@@ -81,24 +60,13 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _siguiendo = false;
   StreamSubscription<Position>? _posStream;
 
-  // Mapa
-  String _capaBase = TileProviders.osm;
-  String _nombreCapa = 'Calles';
-  double _zoomActual = 14.0;
-  final Map<String, String> _capas = {
-    'Calles': TileProviders.osm,
-    'Satélite': TileProviders.satelite,
-    'Oscuro': TileProviders.oscuro,
-  };
-
   @override
   void initState() {
     super.initState();
     _cargarPuntos();
   }
 
-  // ── Persistencia ──────────────────────────────────
-
+  // ── Persistencia ──
   Future<void> _cargarPuntos() async {
     final prefs = await SharedPreferences.getInstance();
     final str = prefs.getString('puntos_campo');
@@ -125,18 +93,15 @@ class _HomeScreenState extends State<HomeScreen> {
     _guardarPuntos();
   }
 
-  // ── GPS ────────────────────────────────────────────
+  void _actualizarPunto(int index, Map<String, dynamic> punto) {
+    setState(() => _puntos[index] = punto);
+    _guardarPuntos();
+  }
 
+  // ── GPS ──
   Future<bool> _verificarPermisos() async {
     bool gps = await Geolocator.isLocationServiceEnabled();
-    if (!gps) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⚠️ Activa el GPS de tu teléfono')),
-        );
-      }
-      return false;
-    }
+    if (!gps) return false;
     LocationPermission p = await Geolocator.checkPermission();
     if (p == LocationPermission.denied) {
       p = await Geolocator.requestPermission();
@@ -172,8 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // ── Formulario ────────────────────────────────────
-
   void _abrirFormulario() {
     if (_posicionGPS == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -192,65 +155,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── GeoJSON ───────────────────────────────────────
-
-  String _generarGeoJSON() {
-    final features = _puntos.map((p) {
-      return {
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [p['longitud'], p['latitud']],
-        },
-        'properties': {
-          'nombre': p['nombre'],
-          'tipo': p['tipo'],
-          'estado': p['estado'],
-          'observacion': p['observacion'] ?? '',
-          'fecha': p['fecha'],
-        },
-      };
-    }).toList();
-
-    final geojson = {
-      'type': 'FeatureCollection',
-      'features': features,
-    };
-
-    return const JsonEncoder.withIndent('  ').convert(geojson);
-  }
-
-  Future<void> _exportarGeoJSON() async {
-    if (_puntos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No hay puntos para exportar')),
-      );
-      return;
-    }
-
-    try {
-      final geojsonStr = _generarGeoJSON();
-      final dir = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File('${dir.path}/geocollect_$timestamp.geojson');
-      await file.writeAsString(geojsonStr);
-
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'GeoCollect — ${_puntos.length} puntos capturados',
-        subject: 'Exportación GeoCollect',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al exportar: $e')),
-        );
-      }
-    }
-  }
-
-  // ── Navegación ────────────────────────────────────
-
   void _verEnMapa(double lat, double lng) {
     setState(() => _pantalla = 0);
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -263,8 +167,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _posStream?.cancel();
     super.dispose();
   }
-
-  // ── Build ─────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -295,39 +197,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Pantalla Mapa ─────────────────────────────────
-
   Widget _buildMapa() {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('GeoCollect'),
-        actions: [
-          DropdownButton<String>(
-            value: _nombreCapa,
-            dropdownColor: Colors.teal.shade800,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            underline: const SizedBox(),
-            icon: const Icon(Icons.layers, color: Colors.white),
-            items: _capas.keys
-                .map((n) => DropdownMenuItem(value: n, child: Text(n)))
-                .toList(),
-            onChanged: (n) {
-              if (n != null) {
-                setState(() {
-                  _nombreCapa = n;
-                  _capaBase = _capas[n]!;
-                });
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.file_download),
-            tooltip: 'Exportar GeoJSON',
-            onPressed: _exportarGeoJSON,
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
+      appBar: AppBar(title: const Text('GeoCollect')),
       body: Column(
         children: [
           Expanded(
@@ -338,13 +210,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   options: MapOptions(
                     initialCenter: const LatLng(-16.5, -68.15),
                     initialZoom: 14.0,
-                    onPositionChanged: (cam, _) {
-                      _zoomActual = cam.zoom;
-                    },
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: _capaBase,
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.geo_collect',
                     ),
                     // Puntos capturados
@@ -356,8 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 30,
                           child: Icon(
                             _iconoPorTipo(p['tipo'] ?? ''),
-                            color:
-                                _colorPorEstado(p['estado'] ?? 'Bueno'),
+                            color: _colorPorEstado(p['estado'] ?? 'Bueno'),
                             size: 28,
                           ),
                         );
@@ -386,7 +255,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ]),
                   ],
                 ),
-                // Botones
                 Positioned(
                   right: 16,
                   bottom: 16,
@@ -419,7 +287,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          // Barra inferior
           Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -432,11 +299,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? '📍 ${_posicionGPS!.latitude.toStringAsFixed(4)}, '
                         '${_posicionGPS!.longitude.toStringAsFixed(4)}'
                       : '📍 Sin GPS',
-                  style:
-                      const TextStyle(color: Colors.white, fontSize: 11),
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
                 ),
                 Text(
-                  'Puntos: ${_puntos.length} · $_nombreCapa',
+                  'Puntos: ${_puntos.length}',
                   style: const TextStyle(
                       color: Colors.white70, fontSize: 11),
                 ),
@@ -448,33 +314,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Pantalla Lista ────────────────────────────────
-
   Widget _buildLista() {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Datos (${_puntos.length})'),
-        actions: [
-          if (_puntos.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.file_download),
-              tooltip: 'Exportar GeoJSON',
-              onPressed: _exportarGeoJSON,
-            ),
-        ],
-      ),
+      appBar: AppBar(title: Text('Datos (${_puntos.length})')),
       body: _puntos.isEmpty
           ? const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                  Icon(Icons.inbox, size: 64, color: Colors.grey),
                   SizedBox(height: 12),
                   Text('No hay puntos capturados',
-                      style: TextStyle(color: Colors.grey, fontSize: 16)),
-                  SizedBox(height: 4),
+                      style: TextStyle(color: Colors.grey)),
                   Text('Ve al mapa y captura tu primer punto',
-                      style: TextStyle(color: Colors.grey, fontSize: 13)),
+                      style: TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             )
@@ -489,32 +342,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.red,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
-                    child:
-                        const Icon(Icons.delete, color: Colors.white),
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  confirmDismiss: (_) async {
-                    return await showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text('Eliminar punto'),
-                        content: Text(
-                            '¿Eliminar "${p['nombre']}"?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(context, false),
-                            child: const Text('Cancelar'),
-                          ),
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(context, true),
-                            child: const Text('Eliminar',
-                                style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
                   onDismissed: (_) => _eliminarPunto(i),
                   child: ListTile(
                     leading: CircleAvatar(
@@ -523,8 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               .withOpacity(0.15),
                       child: Icon(
                         _iconoPorTipo(p['tipo'] ?? ''),
-                        color:
-                            _colorPorEstado(p['estado'] ?? 'Bueno'),
+                        color: _colorPorEstado(p['estado'] ?? 'Bueno'),
                       ),
                     ),
                     title: Text(p['nombre'] ?? 'Sin nombre'),
@@ -537,8 +365,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     trailing: IconButton(
                       icon: const Icon(Icons.map_outlined),
                       tooltip: 'Ver en mapa',
-                      onPressed: () =>
-                          _verEnMapa(p['latitud'], p['longitud']),
+                      onPressed: () => _verEnMapa(
+                        p['latitud'],
+                        p['longitud'],
+                      ),
                     ),
                   ),
                 );
@@ -546,8 +376,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
     );
   }
-
-  // ── Helpers ───────────────────────────────────────
 
   IconData _iconoPorTipo(String tipo) {
     switch (tipo) {
@@ -585,10 +413,12 @@ class _HomeScreenState extends State<HomeScreen> {
 class FormularioPunto extends StatefulWidget {
   final LatLng posicion;
   final Function(Map<String, dynamic>) onGuardar;
+  final Map<String, dynamic>? datosExistentes;
 
   const FormularioPunto({
     required this.posicion,
     required this.onGuardar,
+    this.datosExistentes,
     super.key,
   });
 
@@ -603,24 +433,33 @@ class _FormularioPuntoState extends State<FormularioPunto> {
   String? _tipo;
   String _estado = 'Bueno';
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.datosExistentes != null) {
+      _nombreCtrl.text = widget.datosExistentes!['nombre'] ?? '';
+      _tipo = widget.datosExistentes!['tipo'];
+      _estado = widget.datosExistentes!['estado'] ?? 'Bueno';
+      _observacionCtrl.text = widget.datosExistentes!['observacion'] ?? '';
+    }
+  }
+
   void _guardar() {
     if (_formKey.currentState!.validate()) {
       final punto = {
-        'id': DateTime.now().millisecondsSinceEpoch,
-        'nombre': _nombreCtrl.text.trim(),
+        'id': widget.datosExistentes?['id'] ??
+            DateTime.now().millisecondsSinceEpoch,
+        'nombre': _nombreCtrl.text,
         'tipo': _tipo,
         'estado': _estado,
-        'observacion': _observacionCtrl.text.trim(),
+        'observacion': _observacionCtrl.text,
         'latitud': widget.posicion.latitude,
         'longitud': widget.posicion.longitude,
-        'fecha': DateTime.now().toIso8601String(),
+        'fecha': widget.datosExistentes?['fecha'] ??
+            DateTime.now().toIso8601String(),
       };
       widget.onGuardar(punto);
       Navigator.pop(context);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('✅ "${_nombreCtrl.text}" guardado')),
-      );
     }
   }
 
@@ -633,8 +472,11 @@ class _FormularioPuntoState extends State<FormularioPunto> {
 
   @override
   Widget build(BuildContext context) {
+    final bool esEdicion = widget.datosExistentes != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('Nuevo Punto')),
+      appBar: AppBar(
+        title: Text(esEdicion ? 'Editar Punto' : 'Nuevo Punto'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -642,35 +484,23 @@ class _FormularioPuntoState extends State<FormularioPunto> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Coordenadas GPS (solo lectura)
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      const Icon(Icons.gps_fixed, color: Colors.teal),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Coordenadas GPS',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey)),
-                          Text(
-                            '${widget.posicion.latitude.toStringAsFixed(6)}, '
-                            '${widget.posicion.longitude.toStringAsFixed(6)}',
-                            style: const TextStyle(
-                                fontFamily: 'monospace',
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                      const Icon(Icons.location_on, color: Colors.teal),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${widget.posicion.latitude.toStringAsFixed(6)}, '
+                        '${widget.posicion.longitude.toStringAsFixed(6)}',
+                        style: const TextStyle(fontFamily: 'monospace'),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              // Nombre
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _nombreCtrl,
                 decoration: const InputDecoration(
@@ -680,14 +510,13 @@ class _FormularioPuntoState extends State<FormularioPunto> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Nombre obligatorio' : null,
+                    (v == null || v.isEmpty) ? 'Nombre obligatorio' : null,
               ),
-              const SizedBox(height: 14),
-              // Tipo
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: _tipo,
                 decoration: const InputDecoration(
-                  labelText: 'Tipo de punto *',
+                  labelText: 'Tipo *',
                   prefixIcon: Icon(Icons.category),
                   border: OutlineInputBorder(),
                 ),
@@ -696,14 +525,11 @@ class _FormularioPuntoState extends State<FormularioPunto> {
                         DropdownMenuItem(value: t, child: Text(t)))
                     .toList(),
                 onChanged: (v) => setState(() => _tipo = v),
-                validator: (v) =>
-                    v == null ? 'Selecciona un tipo' : null,
+                validator: (v) => v == null ? 'Selecciona un tipo' : null,
               ),
-              const SizedBox(height: 18),
-              // Estado
+              const SizedBox(height: 16),
               const Text('Estado:',
-                  style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               ...['Bueno', 'Regular', 'Malo'].map((e) => RadioListTile(
                     title: Text(e),
                     value: e,
@@ -711,28 +537,23 @@ class _FormularioPuntoState extends State<FormularioPunto> {
                     onChanged: (v) => setState(() => _estado = v!),
                     dense: true,
                   )),
-              const SizedBox(height: 14),
-              // Observaciones
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _observacionCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Observaciones',
-                  hintText: 'Notas adicionales...',
                   prefixIcon: Icon(Icons.notes),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
-              const SizedBox(height: 28),
-              // Botón guardar
+              const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: _guardar,
                 icon: const Icon(Icons.save),
-                label: const Text('Guardar Punto'),
+                label: Text(esEdicion ? 'Actualizar' : 'Guardar Punto'),
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
             ],

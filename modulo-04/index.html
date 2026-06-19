@@ -28,7 +28,7 @@
   <main class="container">
 
     <div class="mod-header">
-      <span class="mod-chip">Módulo 4 de 6</span>
+      <span class="mod-chip">Módulo 4 de 5</span>
       <h1 class="mod-title">Consumo de Capas<br>GeoServer WMS 🌐</h1>
       <p class="mod-desc">Tu app se conecta a un servidor GIS real. Capas WMS profesionales, filtros CQL y consulta de atributos directamente desde el mapa.</p>
       <div class="mod-stats">
@@ -374,6 +374,11 @@ DWITHIN(geometria, POINT(-68.15 -16.50), 10000, meters)</pre>
           <div class="card" style="margin-top:16px;">
             <div class="card-title">¿Qué es el paquete http?</div>
             <p><code>http</code> es un paquete que permite a tu app hacer peticiones a servidores web — como abrir una URL y leer la respuesta. Lo necesitamos porque GetFeatureInfo devuelve datos JSON (no una imagen como GetMap).</p>
+          </div>
+
+          <div class="callout callout--info">
+            <span class="callout-icon">🤖</span>
+            <div><strong>Tip con IA:</strong> convertir el toque del usuario (lat/lng) al píxel X,Y que GetFeatureInfo necesita es matemática propensa a errores de signo. Pídele a la IA que te genere la fórmula <strong>y</strong> un caso de prueba con números conocidos — luego verifica tú mismo que el resultado del caso de prueba sea el correcto antes de confiar en la fórmula.</div>
           </div>
         </div>
       </div>

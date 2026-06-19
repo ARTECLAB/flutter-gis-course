@@ -1,6 +1,6 @@
 # 📱 Flutter GIS — Desarrollo de Apps Geoespaciales con Flutter
 
-> Curso práctico de 30 horas para construir una app Android real con mapas interactivos, GPS, capas WMS de GeoServer y exportación a GeoJSON.
+> Curso práctico de 20 horas (10 clases de 2h) para quienes ya programan y quieren especializarse en apps GIS: mapas interactivos, GPS, capas WMS de GeoServer, exportación a GeoJSON, y uso de IA como copiloto de código.
 
 ## 🎯 ¿Qué vas a construir?
 
@@ -16,12 +16,11 @@ Una app Android completa llamada **GeoCollect** que:
 ## 📂 Estructura del Curso
 
 ```
-modulo-01/  →  Flutter desde Cero con Mentalidad GIS (Clases 1-2)
+modulo-01/  →  Flutter Moderno con Mentalidad GIS (Clases 1-2)
 modulo-02/  →  Mapas Interactivos & Capas Base (Clases 3-4)
 modulo-03/  →  GPS & Geolocalización Real (Clases 5-6)
 modulo-04/  →  Consumo de Capas GeoServer WMS (Clases 7-8)
-modulo-05/  →  Captura de Datos GPS & Visualización (Clases 9-10)
-modulo-06/  →  Exportación & APK Final (Clases 11-12)
+modulo-05/  →  Captura de Datos, Exportación & APK Final (Clases 9-10)
 retos-extra/ → Desafíos opcionales para ir más allá
 recursos/    → Cheatsheets, enlaces y material de referencia
 ```
@@ -33,7 +32,8 @@ recursos/    → Cheatsheets, enlaces y material de referencia
 - Conexión a internet estable
 - VS Code instalado
 - Cuenta de GitHub (gratuita)
-- **No se requiere experiencia previa en programación**
+- **Ya sabes programar** (lógica básica en cualquier lenguaje). No se requiere experiencia previa en Flutter, Dart ni GIS.
+- Se recomienda tener acceso a un asistente de IA (Claude, Copilot, ChatGPT, etc.) — se usa como copiloto de código durante todo el curso.
 
 ## ⚙️ Setup Inicial
 

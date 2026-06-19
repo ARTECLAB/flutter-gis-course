@@ -3,7 +3,7 @@
 ## ¿Qué es GeoServer? Tu primera capa WMS
 
 **Duración:** 2 horas (120 minutos)
-**Módulo:** 4 de 6
+**Módulo:** 4 de 5
 
 ---
 
